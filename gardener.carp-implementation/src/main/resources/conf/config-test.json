@@ -1,0 +1,51 @@
+{
+  "webserver.environment": "test",
+  "webserver.port": 8444,
+  "webserver.cert.path": "certificate/fullchain.pem",
+  "webserver.key.path": "certificate/privatekey.pem",
+
+  "rabbitmq.host": "localhost",
+  "rabbitmq.port": 5672,
+  "rabbitmq.username": "",
+  "rabbitmq.password": "",
+  "rabbitmq.exchange.name": "third-party-direct-exchange-local",
+  "rabbitmq.queue.name": "third-party-queue",
+
+  "mongo.db.connection_string": "mongodb://localhost:27017",
+  "mongo.db.name": "integration-test",
+  "mongo.db.username": "",
+  "mongo.db.password": "",
+
+  "fitbit.client.id": "",
+  "fitbit.client.secret": "",
+  "fitbit.oauth2.authorization.uri": "https://www.fitbit.com/oauth2/authorize",
+  "fitbit.oauth2.access.uri": "https://api.fitbit.com/oauth2/token",
+  "fitbit.data.uri": "https://api.fitbit.com",
+  "fitbit.client.callback.uri": "https://localhost:8444/wearables/api/oauth/fitbit/callback",
+  "fitbit.client.subscription.code": "68a848c63154246fa34301d31d80197427ba12e8014b17d741b1bec01c8fa4a5",
+
+  "withings.client.id": "",
+  "withings.client.secret": "",
+  "withings.oauth2.authorization.uri": "https://account.withings.com/oauth2_user/authorize2",
+  "withings.oauth2.access.uri": "https://wbsapi.withings.net/v2/oauth2",
+  "withings.data.uri": "https://wbsapi.withings.net",
+  "withings.client.callback.uri": "https://localhost:8444/wearables/api/oauth/withings/callback",
+  "withings.client.collection.callback.uri": "https://cans.cachet.dk/wearables/api/collection/withings",
+
+  "dexcom.client.id": "",
+  "dexcom.client.secret": "",
+  "dexcom.oauth2.authorization.uri": "https://sandbox-api.dexcom.com/v2/oauth2/login",
+  "dexcom.oauth2.access.uri": "https://sandbox-api.dexcom.com/v2/oauth2/token",
+  "dexcom.data.uri": "https://sandbox-api.dexcom.com/v2/users/self",
+  "dexcom.client.callback.uri": "https://localhost:8444/wearables/api/oauth/dexcom/callback",
+
+  "garmin.consumer.key": "",
+  "garmin.consumer.secret": "",
+  "garmin.oauth.signature.method": "HMAC-SHA1",
+  "garmin.oauth.version": "1.0",
+  "garmin.oauth.request_token.uri": "https://connectapi.garmin.com/oauth-service/oauth/request_token",
+  "garmin.oauth.access_token.uri": "https://connectapi.garmin.com/oauth-service/oauth/access_token",
+  "garmin.oauth.authorization.uri": "https://connect.garmin.com/oauthConfirm",
+  "garmin.data.uri": "https://apis.garmin.com",
+  "garmin.client.callback.uri": "https://localhost:8444/wearables/api/oauth/garmin/callback"
+}

@@ -1,0 +1,26 @@
+{
+  "unit":"mg/dL",
+  "rateUnit":"mg/dL/min",
+  "egvs":[
+    {
+      "systemTime":"2021-10-24T23:58:42",
+      "displayTime":"2021-10-24T17:01:14",
+      "value":178,
+      "realtimeValue":178,
+      "smoothedValue":null,
+      "status":null,
+      "trend":"fortyFiveDown",
+      "trendRate":0.0
+    },
+    {
+      "systemTime":"2021-10-24T23:53:42",
+      "displayTime":"2021-10-24T16:56:14",
+      "value":187,
+      "realtimeValue":187,
+      "smoothedValue":null,
+      "status":null,
+      "trend":"fortyFiveDown",
+      "trendRate":0.0
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "userid":"withings_external_id",
+  "access_token":"access_token",
+  "refresh_token":"refresh_token",
+  "scope":"user.metrics,user.activity",
+  "expires_in":10800,
+  "token_type":"Bearer"
+}

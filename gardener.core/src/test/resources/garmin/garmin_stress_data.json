@@ -1,0 +1,31 @@
+{
+  "steps":0,
+  "stepsGoal":3450,
+  "summaryId":"x4328588-617c6ee0-29f4-6",
+  "activityType":"WALKING",
+  "calendarDate":"2021-10-30",
+  "floorsClimbed":0,
+  "maxStressLevel":0,
+  "bmrKilocalories":281,
+  "stressQualifier":"unknown",
+  "distanceInMeters":0.0,
+  "durationInSeconds":10740,
+  "floorsClimbedGoal":10,
+  "activeKilocalories":0,
+  "averageStressLevel":-1,
+  "startTimeInSeconds":1635544800,
+  "activeTimeInSeconds":0,
+  "stressDurationInSeconds":0,
+  "startTimeOffsetInSeconds":7200,
+  "lowStressDurationInSeconds":0,
+  "timeOffsetHeartRateSamples":{
+
+  },
+  "highStressDurationInSeconds":0,
+  "restStressDurationInSeconds":0,
+  "mediumStressDurationInSeconds":0,
+  "intensityDurationGoalInSeconds":9000,
+  "activityStressDurationInSeconds":0,
+  "moderateIntensityDurationInSeconds":0,
+  "vigorousIntensityDurationInSeconds":0
+}

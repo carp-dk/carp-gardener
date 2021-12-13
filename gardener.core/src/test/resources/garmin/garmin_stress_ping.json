@@ -1,0 +1,9 @@
+{
+  "bodyComps" : [ {
+    "userId" : "garmin_id",
+    "userAccessToken" : "long_lived_token",
+    "uploadStartTimeInSeconds" : 1635176900,
+    "uploadEndTimeInSeconds" : 1635176900,
+    "callbackURL" : "https://apis.garmin.com/wellness-api/rest/stressDetails?uploadStartTimeInSeconds=1634220000&uploadEndTimeInSeconds=1634221200"
+  } ]
+}

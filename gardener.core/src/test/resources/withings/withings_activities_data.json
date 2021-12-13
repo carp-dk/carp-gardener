@@ -1,0 +1,26 @@
+{
+  "body":{
+    "more":false,
+    "offset":200,
+    "activities":[
+      {
+        "date":"2021-10-28",
+        "soft":6540,
+        "brand":18,
+        "steps":1962,
+        "active":2156,
+        "intense":2156,
+        "calories":333.95,
+        "deviceid":null,
+        "distance":1667.971,
+        "moderate":0,
+        "timezone":"Europe/Copenhagen",
+        "elevation":0,
+        "is_tracker":true,
+        "hash_deviceid":null,
+        "totalcalories":2176.175
+      }
+    ]
+  },
+  "status":0
+}

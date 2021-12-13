@@ -1,0 +1,8 @@
+{
+  "access_token":"fitbit_access_token",
+  "expires_in":0,
+  "refresh_token":"fitbit_refresh_token",
+  "scope":"nutrition sleep profile settings weight activity heartrate",
+  "token_type":"Bearer",
+  "user_id":"FITBIT_EXTERNAL_ID"
+}

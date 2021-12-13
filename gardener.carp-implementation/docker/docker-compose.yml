@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+
+  ## Application service
+  carp-wearables-service:
+    container_name: carp-wearables-service
+    build:
+      context: ../..
+      dockerfile: gardener.carp-implementation/docker/Dockerfile
+    ports:
+      - 8444:8444
+    expose:
+      - 8444
+    environment:
+      - profile=prod
+    networks:
+      - cans
+    depends_on:
+      - rabbitmq-common
+      - carp-mongo
+
+  # Common RabbitMQ
+  rabbitmq-common:
+    container_name: carp-rabbitmq-common
+    hostname: rabbitmq-common
+    image: rabbitmq:3-management
+    ports:
+      - 5673:5672
+      - 15673:15672
+      - 15693:15692
+    volumes:
+      - rabbitmq_common:/var/lib/rabbitmq/data
+      - ./config/rabbit/definitions.json:/etc/rabbitmq/definitions.json
+      - ./config/rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./config/rabbit/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    networks:
+      - cans
+    restart: unless-stopped
+
+  # MongoDB
+  carp-mongo:
+    container_name: carp-mongo
+    image: mongo:4.0.4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: integration-db
+      MONGODB_USER: admin
+      MONGODB_DATABASE: integration-db
+      MONGODB_PASS: admin
+    ports:
+      - 27017:27017
+    volumes:
+      - ./config/mongo/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
+      - mongodb_data:/data/db
+    networks:
+      - cans
+    restart: unless-stopped
+
+networks:
+  cans:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  rabbitmq_common:
