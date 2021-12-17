@@ -48,6 +48,7 @@ dependencies {
     implementation("io.vertx:vertx-web:$vertxVersion")
     implementation("io.vertx:vertx-lang-kotlin:$vertxVersion")
     implementation("io.vertx:vertx-config:$vertxVersion")
+    implementation("io.vertx:vertx-config-spring-config-server:$vertxVersion")
     // Vert.x Mongo
     implementation("io.vertx:vertx-mongo-client:4.1.5")
     // RabbitMQ
@@ -61,6 +62,7 @@ dependencies {
     testImplementation("io.vertx:vertx-junit5:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
+
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions.jvmTarget = "11"

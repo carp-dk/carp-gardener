@@ -7,11 +7,11 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import org.slf4j.LoggerFactory
 
+
 /**
  * Manages the configuration files.
  */
 class PropertiesConfig(vertx: Vertx) {
-
     companion object {
         private val LOGGER = LoggerFactory.getLogger(PropertiesConfig::class.java)
     }
@@ -22,15 +22,22 @@ class PropertiesConfig(vertx: Vertx) {
         // If no profile is set, use the 'test' configuration.
         val profile = System.getenv("profile") ?: "test"
         LOGGER.info("The following profile is active: $profile")
+
+        // Retrieve configuration locally
         val configuration = getConfig(profile)
 
-        val store = ConfigStoreOptions()
-            .setType("json")
-            .setConfig(configuration)
+        // Retrieve configuration from Spring Config Server
+        val stores = SpringCloudConfigStoreProvider().options
+        val future = ConfigRetriever.create(
+            vertx,
+            ConfigRetrieverOptions().addStore(stores)
+        ).config
 
-        val future = ConfigRetriever.create(vertx, ConfigRetrieverOptions().addStore(store)).config
-        while (future.result() == null) {}
-        if (future.failed()) {
+        LOGGER.info("Configuration retrieved: ${future.isComplete}.")
+
+        while (future == null) { }
+        if (future.failed())
+        {
             throw IllegalArgumentException("Exception occurred while setting up the configuration: ${future.cause().message}")
         }
         LOGGER.info("Application properties successfully set.")
@@ -58,5 +65,27 @@ class PropertiesConfig(vertx: Vertx) {
         }
         return JsonObject(applicationConfig)
     }
+}
 
+class SpringCloudConfigStoreProvider
+{
+    val options: ConfigStoreOptions
+        get()
+        {
+            return ConfigStoreOptions()
+                .setType("spring-config-server")
+                .setConfig(
+                    JsonObject()
+                        .put("url", "http://localhost:8888/config-client/gardener")
+                        .put("user", "carp")
+                        .put("password", "ENC(aziKqkaLO34e5ad423gd123)")
+                        .put("timeout", 10000)
+                )
+        }
+}
+
+class WebClientProvider
+{
+    // if the SpringCloudConfigStoreProvider doesn't work -> use the simply Webclient or a vertx router
+    // curl --location --request GET 'http://localhost:8888/config-client/gardener' --header 'Authorization: Basic Y2FycDpFTkMoYXppS3FrYUxPMzRlNWFkNDIzZ2QxMjMp' --header 'Cookie: JSESSIONID=362A753E1F63813BCBA33F8069B605A0'
 }
