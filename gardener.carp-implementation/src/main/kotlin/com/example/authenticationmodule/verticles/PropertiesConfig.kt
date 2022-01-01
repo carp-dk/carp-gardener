@@ -23,25 +23,39 @@ class PropertiesConfig(vertx: Vertx) {
         val profile = System.getenv("profile") ?: "test"
         LOGGER.info("The following profile is active: $profile")
 
-        // Retrieve configuration locally
-        val configuration = getConfig(profile)
+        properties = if (profile == "prod") {
+            // Retrieve configuration from Spring Config Server
+            val stores = SpringCloudConfigStoreProvider().options
+            val future = ConfigRetriever.create(
+                vertx,
+                ConfigRetrieverOptions().addStore(stores)
+            ).config
 
-        // Retrieve configuration from Spring Config Server
-        val stores = SpringCloudConfigStoreProvider().options
-        val future = ConfigRetriever.create(
-            vertx,
-            ConfigRetrieverOptions().addStore(stores)
-        ).config
+            LOGGER.info("Configuration retrieved: ${future.isComplete}.")
 
-        LOGGER.info("Configuration retrieved: ${future.isComplete}.")
+            while (future == null) { }
+            if (future.failed())
+            {
+                throw IllegalArgumentException("Exception occurred while setting up the configuration: ${future.cause().message}")
+            }
+            LOGGER.info("Application properties successfully set.")
+            future.result()
+        } else {
+            // Retrieve configuration locally
+            val configuration = getConfig(profile)
 
-        while (future == null) { }
-        if (future.failed())
-        {
-            throw IllegalArgumentException("Exception occurred while setting up the configuration: ${future.cause().message}")
+            val store = ConfigStoreOptions()
+                .setType("json")
+                .setConfig(configuration)
+
+            val future = ConfigRetriever.create(vertx, ConfigRetrieverOptions().addStore(store)).config
+            while (future.result() == null) {}
+            if (future.failed()) {
+                throw IllegalArgumentException("Exception occurred while setting up the configuration: ${future.cause().message}")
+            }
+            LOGGER.info("Application properties successfully set.")
+            future.result()
         }
-        LOGGER.info("Application properties successfully set.")
-        properties = future.result()
     }
 
     /**
