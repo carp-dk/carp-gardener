@@ -37,7 +37,7 @@ The `operator` interfaces need network communications
 including OAuth authorization calls and data collection. 
 
 The `IEventBus` interface can also be provided or the default 
-[SingleThreadedEventBus](../gardener.core/src/main/kotlin/com/example/authenticationmodule/core/infrastructure/eventbus/SingleThreadedEventBus.kt)
+[SingleThreadedEventBus](../gardener-core/src/main/kotlin/dk/carp/gardener/authentication/core/infrastructure/eventbus/SingleThreadedEventBus.kt)
 can be used if parallelism is not needed.
 
 Lastly, the `IDataPublisher` interface does not require anything specific,

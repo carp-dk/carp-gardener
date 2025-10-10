@@ -15,7 +15,7 @@ The _repositories_ are implemented using [MongoDB](https://www.mongodb.com/).
 The _operators_ are implemented using the [Scribe Java](https://github.com/scribejava/scribejava)
 library, which handles the necessary OAuth protocols requirements.
 
-The _EventBus_ uses the [SingleThreadedEventBus](../gardener.core/src/main/kotlin/com/example/authenticationmodule/core/infrastructure/eventbus/SingleThreadedEventBus.kt).
+The _EventBus_ uses the [SingleThreadedEventBus](../gardener-core/src/main/kotlin/dk/carp/gardener/authentication/core/infrastructure/eventbus/SingleThreadedEventBus.kt).
 
 The `IDataPublisher` interface is implemented using
 [RabbitMQ](https://www.rabbitmq.com/). The data collected from the 

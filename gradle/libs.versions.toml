@@ -1,0 +1,57 @@
+[versions]
+kotlin = "2.1.21"
+junit = "5.11.4"
+shadow = "8.0.0"
+slf4j = "2.0.17"
+logback = "1.5.13"
+jackson = "2.20.0"
+vertx = "4.5.21"
+mockitoKotlin = "5.4.0"
+
+# If you keep a native Netty for mac, pin it explicitly (or align to Vert.x BOM)
+netty = "4.1.67.Final"
+
+[libraries]
+guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
+scribejava = { module = "com.github.scribejava:scribejava-core", version = "8.3.3" }
+
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-jsr310        = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+slf4j-api    = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback      = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+vertx-bom    = { module = "io.vertx:vertx-stack-depchain", version.ref = "vertx" }
+vertx-web    = { module = "io.vertx:vertx-web" }           # version comes from BOM
+vertx-client = { module = "io.vertx:vertx-web-client" }    # version comes from BOM
+vertx-kt     = { module = "io.vertx:vertx-lang-kotlin" }   # version comes from BOM
+vertx-config = { module = "io.vertx:vertx-config" }        # version from BOM
+vertx-config-spring = { module = "io.vertx:vertx-config-spring-config-server" } # from BOM
+vertx-mongo  = { module = "io.vertx:vertx-mongo-client" }  # from BOM
+
+rabbitmq     = { module = "com.rabbitmq:amqp-client", version = "5.18.0" }
+netty-osx    = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "netty" }
+
+kotlin-stdlib  = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+vertx-junit5  = { module = "io.vertx:vertx-junit5" }       # version comes from BOM
+
+mockito-kotlin        = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+
+
+[bundles]
+vertx-core = [
+    "vertx-web",
+    "vertx-client",
+    "vertx-kt",
+    "vertx-config",
+    "vertx-config-spring"
+]
+
+[plugins]
+kotlin-jvm            = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization  = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow                = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+application           = { id = "application" }  # core plugin, no version

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+# RabbitMQ
+  rabbitmq:
+    container_name: carp-rabbitmq
+    image: rabbitmq:4-management
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 5671:5671
+      - 15672:15672
+      - 15671:15671
+      - 15692:15692
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq/data
+      - ./config/rabbit/definitions.json:/etc/rabbitmq/definitions.json
+      - ./config/rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./config/rabbit/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    networks:
+      - cans
+    restart: unless-stopped
+
+# Mongo
+  mongo:
+    container_name: carp-mongo
+    image: mongo:6.0
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: integration-db
+    volumes:
+      - ./config/mongo/init-mongo-local.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongodb_data:/data/db
+    networks:
+      - cans
+
+networks:
+  cans:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  rabbitmq:
