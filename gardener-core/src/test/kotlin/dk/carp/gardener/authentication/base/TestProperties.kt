@@ -4,7 +4,6 @@ package dk.carp.gardener.authentication.base
  * Utility class that holds test properties.
  */
 class TestProperties private constructor() {
-
     companion object {
         // Fitbit properties
         const val FITBIT_CLIENT_ID = "fitbit_id"
@@ -40,5 +39,4 @@ class TestProperties private constructor() {
         const val DEXCOM_TEST_USER_EXTERNAL_ID = ""
         const val DEXCOM_PING_USER_ID = "userid"
     }
-
 }

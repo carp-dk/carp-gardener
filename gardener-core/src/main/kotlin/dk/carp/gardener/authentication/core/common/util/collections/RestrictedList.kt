@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * A List collection that only allows appending and
  * does not allow the modification of existing entries.
  */
-class RestrictedList<T>(@JsonProperty("list") initList: MutableList<T>? = null) {
-
-
+class RestrictedList<T>(
+    @JsonProperty("list") initList: MutableList<T>? = null,
+) {
     private val list: MutableList<T>
 
     init {
@@ -29,8 +29,5 @@ class RestrictedList<T>(@JsonProperty("list") initList: MutableList<T>? = null) 
         }
     }
 
-    fun getList(): List<T> {
-        return list
-    }
-
+    fun getList(): List<T> = list
 }

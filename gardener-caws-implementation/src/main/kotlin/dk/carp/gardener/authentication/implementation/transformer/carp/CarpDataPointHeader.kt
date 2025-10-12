@@ -17,5 +17,5 @@ data class CarpDataPointHeader(
     var deviceRoleName: String? = null,
     var uploadTime: Instant = Instant.now(),
     var startTime: Instant = Instant.now(),
-    var endTime: Instant = Instant.now()
+    var endTime: Instant = Instant.now(),
 ) : Serializable

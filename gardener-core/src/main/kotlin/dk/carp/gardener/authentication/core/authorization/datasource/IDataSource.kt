@@ -10,7 +10,6 @@ import dk.carp.gardener.authentication.core.common.events.datacollection.DataCol
  * regardless of their authorization process.
  */
 interface IDataSource {
-
     /**
      * Returns the ID of the data source.
      */
@@ -41,7 +40,11 @@ interface IDataSource {
      *
      * @throws IllegalArgumentException When the user is already authorized with the given data source.
      */
-    fun initiateUserAuthorization(userId: String, dataSourceId: String, params: AuthorizationRequestParams): AuthorizationRequest
+    fun initiateUserAuthorization(
+        userId: String,
+        dataSourceId: String,
+        params: AuthorizationRequestParams,
+    ): AuthorizationRequest
 
     /**
      * Return the current [AccessParams] for the user for the given data source.
@@ -66,5 +69,4 @@ interface IDataSource {
      *  - The requested [DataCollectionType] is not valid.
      */
     fun getDataCollectionPreparationEventFromPing(notification: String): List<DataCollectionPreparationEvent>
-
 }

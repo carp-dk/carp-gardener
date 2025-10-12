@@ -1,8 +1,8 @@
 package dk.carp.gardener.authentication.core.authorization.authorizationstate
 
-class AuthorizationStateServiceHost(private val repository: IAuthorizationStateRepository) :
-    IAuthorizationStateService {
-
+class AuthorizationStateServiceHost(
+    private val repository: IAuthorizationStateRepository,
+) : IAuthorizationStateService {
     /**
      * Retrieves an [AuthorizationState] object by its ID.
      *
@@ -12,9 +12,8 @@ class AuthorizationStateServiceHost(private val repository: IAuthorizationStateR
      *
      * @throws IllegalArgumentException When no state entry is found with the given [id].
      */
-    override fun getById(id: String): AuthorizationState {
-        return repository.findById(id) ?: throw IllegalArgumentException("State is not found with id $id!")
-    }
+    override fun getById(id: String): AuthorizationState =
+        repository.findById(id) ?: throw IllegalArgumentException("State is not found with id $id!")
 
     /**
      * Stores a newly created [AuthorizationState] or
@@ -36,5 +35,4 @@ class AuthorizationStateServiceHost(private val repository: IAuthorizationStateR
         state.success = true
         save(state)
     }
-
 }

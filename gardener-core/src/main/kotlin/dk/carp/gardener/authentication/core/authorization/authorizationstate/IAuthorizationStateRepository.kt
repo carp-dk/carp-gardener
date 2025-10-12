@@ -4,7 +4,6 @@ package dk.carp.gardener.authentication.core.authorization.authorizationstate
  * Manipulates [AuthorizationState] objects.
  */
 interface IAuthorizationStateRepository {
-
     /**
      * Retrieves an [AuthorizationState] object by its ID.
      *
@@ -21,5 +20,4 @@ interface IAuthorizationStateRepository {
      * @param state The [AuthorizationState] object to store.
      */
     fun upsert(state: AuthorizationState)
-
 }

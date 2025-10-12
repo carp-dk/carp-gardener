@@ -10,14 +10,17 @@ import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessPara
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import dk.carp.gardener.authentication.implementation.repository.MongoAccessParamsRepository
 import io.vertx.junit5.VertxTestContext
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
  * Integration tests for [MongoAccessParamsRepository]
  */
 class MongoAccessParamRepositoryTest : ImplementationTest() {
-
     @Test
     fun paramsCanBeInserted(testContext: VertxTestContext) {
         val userId = "upsertTest"
@@ -107,9 +110,7 @@ class MongoAccessParamRepositoryTest : ImplementationTest() {
             internalUserId = internalUserId,
             dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
             params = accessParams,
-            externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID
+            externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
         )
     }
-
-
 }

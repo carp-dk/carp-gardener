@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * Tests the functionality of [IAuthorizationStateService]
  */
 class AuthorizationStateTest : CoreTest() {
-
     @Test
     fun stateCanBeSaved() {
         val userId = "stateCanBeSaved_user"
@@ -53,8 +52,7 @@ class AuthorizationStateTest : CoreTest() {
         val dataSourceId = FitbitDataSource.DATA_SOURCE_ID
         return OAuth2AuthorizationState(
             userId = userId,
-            dataSourceId = dataSourceId
+            dataSourceId = dataSourceId,
         )
     }
-
 }

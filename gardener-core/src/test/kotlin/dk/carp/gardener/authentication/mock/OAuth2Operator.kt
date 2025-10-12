@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.mock
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.TestProperties
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
@@ -14,7 +15,6 @@ import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsSer
 import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import com.fasterxml.jackson.databind.JsonNode
 
 /**
  * Mock [OAuth2Operator].
@@ -27,13 +27,13 @@ class OAuth2Operator(
     private val withingsAccessParams: JsonNode,
     private val withingsActivitiesData: JsonNode,
     private val dexcomAccessParams: JsonNode,
-    private val dexcomEgvsData: JsonNode
-) : IOAuth2AuthorizationOperator, IDataCollectionOperator {
-
+    private val dexcomEgvsData: JsonNode,
+) : IOAuth2AuthorizationOperator,
+    IDataCollectionOperator {
     override fun getCompleteAuthorizationUrlForState(
         stateId: String,
         requestedScopes: String,
-        params: OAuth2AuthorizationRequestParams
+        params: OAuth2AuthorizationRequestParams,
     ): String {
         val state = stateService.getById(stateId)
         return when (state.dataSourceId) {
@@ -54,42 +54,43 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         authorizationCode: String,
-        params: OAuth2AuthorizationRequestParams
+        params: OAuth2AuthorizationRequestParams,
     ): OAuth2AccessParams {
-        val newParams =  when (dataSourceId) {
-            FitbitDataSource.DATA_SOURCE_ID -> {
-                OAuth2AccessParams(
-                    internalUserId = userId,
-                    dataSourceId = dataSourceId,
-                    params = fitbitAccessParams,
-                    externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID
-                )
+        val newParams =
+            when (dataSourceId) {
+                FitbitDataSource.DATA_SOURCE_ID -> {
+                    OAuth2AccessParams(
+                        internalUserId = userId,
+                        dataSourceId = dataSourceId,
+                        params = fitbitAccessParams,
+                        externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
+                    )
+                }
+                WithingsDataSource.DATA_SOURCE_ID -> {
+                    OAuth2AccessParams(
+                        internalUserId = userId,
+                        dataSourceId = dataSourceId,
+                        params = withingsAccessParams,
+                        externalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID,
+                    )
+                }
+                DexcomDataSource.DATA_SOURCE_ID -> {
+                    OAuth2AccessParams(
+                        internalUserId = userId,
+                        dataSourceId = dataSourceId,
+                        params = dexcomAccessParams,
+                        externalUserId = TestProperties.DEXCOM_TEST_USER_EXTERNAL_ID,
+                    )
+                }
+                else -> {
+                    OAuth2AccessParams(
+                        internalUserId = userId,
+                        dataSourceId = dataSourceId,
+                        params = fitbitAccessParams,
+                        externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
+                    )
+                }
             }
-            WithingsDataSource.DATA_SOURCE_ID -> {
-                OAuth2AccessParams(
-                    internalUserId = userId,
-                    dataSourceId = dataSourceId,
-                    params = withingsAccessParams,
-                    externalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID
-                )
-            }
-            DexcomDataSource.DATA_SOURCE_ID -> {
-                OAuth2AccessParams(
-                    internalUserId = userId,
-                    dataSourceId = dataSourceId,
-                    params = dexcomAccessParams,
-                    externalUserId = TestProperties.DEXCOM_TEST_USER_EXTERNAL_ID
-                )
-            }
-            else -> {
-                OAuth2AccessParams(
-                    internalUserId = userId,
-                    dataSourceId = dataSourceId,
-                    params = fitbitAccessParams,
-                    externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID
-                )
-            }
-        }
         accessParamsService.addParams(newParams)
         return newParams
     }
@@ -98,18 +99,20 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         refreshToken: String,
-        params: OAuth2TokenRefreshParams
-    ): OAuth2AccessParams {
-        return retrieveAccessParams(userId, dataSourceId, "",
-            OAuth2AuthorizationRequestParams()
+        params: OAuth2TokenRefreshParams,
+    ): OAuth2AccessParams =
+        retrieveAccessParams(
+            userId,
+            dataSourceId,
+            "",
+            OAuth2AuthorizationRequestParams(),
         )
-    }
 
     override fun executeRequest(
         uri: Uri,
         dataType: DataCollectionType,
         accessParams: AccessParams,
-        callback: (String) -> Unit
+        callback: (String) -> Unit,
     ) {
         when (accessParams.dataSourceId) {
             FitbitDataSource.DATA_SOURCE_ID -> {
@@ -121,5 +124,4 @@ class OAuth2Operator(
             else -> callback(fitbitActivitiesData.toString())
         }
     }
-
 }

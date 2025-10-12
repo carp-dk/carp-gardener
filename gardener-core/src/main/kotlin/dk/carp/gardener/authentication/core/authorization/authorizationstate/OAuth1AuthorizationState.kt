@@ -10,5 +10,5 @@ class OAuth1AuthorizationState(
     dataSourceId: String,
     val requestToken: String,
     val tokenSecret: String,
-    applicationData: String? = null
+    applicationData: String? = null,
 ) : AuthorizationState(userId = userId, dataSourceId = dataSourceId, applicationData = applicationData)

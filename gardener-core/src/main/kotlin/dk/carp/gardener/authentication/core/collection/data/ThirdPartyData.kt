@@ -1,8 +1,8 @@
 package dk.carp.gardener.authentication.core.collection.data
 
-import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransformer
-import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import com.fasterxml.jackson.databind.JsonNode
+import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
+import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransformer
 import java.time.Instant
 
 /**
@@ -32,7 +32,7 @@ data class ThirdPartyData(
     /**
      * Collection timestamp.
      */
-    val collectedAt: Instant = Instant.now()
+    val collectedAt: Instant = Instant.now(),
 ) {
     /**
      * Transforms the data into the configured format
@@ -46,7 +46,7 @@ data class ThirdPartyData(
                 userId = userId,
                 dataType = dataIdentifier,
                 collectedAt = collectedAt,
-                value = transformedDataType
+                value = transformedDataType,
             )
         }
     }

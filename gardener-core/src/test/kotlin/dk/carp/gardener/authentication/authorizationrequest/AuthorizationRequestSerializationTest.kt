@@ -14,14 +14,13 @@ import kotlin.test.assertNotNull
  * Tests the serialization of [AuthorizationRequestParams] objects.
  */
 class AuthorizationRequestSerializationTest {
-
     @Test
     fun oauth2StatesCanBeSerializedToJson() {
         val oauth2Params =
             OAuth2AuthorizationRequestParams(
                 additionalParamsForGrants = RestrictedMap(mutableMapOf("hello" to "hello")),
                 additionalParamsForTokens = RestrictedMap(mutableMapOf("hello" to "hello")),
-                scopes = RestrictedList(mutableListOf("hello"))
+                scopes = RestrictedList(mutableListOf("hello")),
             )
 
         val serialized = ConfiguredObjectMapper.instance.writeValueAsString(oauth2Params)
@@ -37,7 +36,7 @@ class AuthorizationRequestSerializationTest {
             OAuth1AuthorizationRequestParams(
                 additionalParamsForGrants = RestrictedMap(mutableMapOf("hello" to "hello")),
                 additionalParamsForTokens = RestrictedMap(mutableMapOf("hello" to "hello")),
-                additionalParamsForUnsignedToken = RestrictedMap(mutableMapOf("hello" to "hello"))
+                additionalParamsForUnsignedToken = RestrictedMap(mutableMapOf("hello" to "hello")),
             )
 
         val serialized = ConfiguredObjectMapper.instance.writeValueAsString(oauth1Params)
@@ -46,6 +45,4 @@ class AuthorizationRequestSerializationTest {
         assertNotNull(deserializedState)
         assertEquals(oauth1Params.additionalParamsForUnsignedToken.getMap(), deserializedState.additionalParamsForUnsignedToken.getMap())
     }
-
-
 }

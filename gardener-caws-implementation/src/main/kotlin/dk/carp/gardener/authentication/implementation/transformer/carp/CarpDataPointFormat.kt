@@ -9,6 +9,6 @@ import java.io.Serializable
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class CarpDataPointFormat(
-    val namespace : String,
-    var name : String
+    val namespace: String,
+    var name: String,
 ) : Serializable

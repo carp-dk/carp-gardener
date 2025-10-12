@@ -1,7 +1,8 @@
 package dk.carp.gardener.authentication.core.common.accessparams
 
-class AccessParamsServiceHost(private val repository: IAccessParamsRepository) : IAccessParamsService {
-
+class AccessParamsServiceHost(
+    private val repository: IAccessParamsRepository,
+) : IAccessParamsService {
     /**
      * Stores a newly created [AccessParams] or
      * updates it, if it is already present (by its ID).
@@ -21,10 +22,12 @@ class AccessParamsServiceHost(private val repository: IAccessParamsRepository) :
      *
      * @throws IllegalArgumentException When no params are found for the user and data source.
      */
-    override fun getCurrentForInternalUserIdAndDataSource(userId: String, dataSourceId: String): AccessParams {
-        return repository.getLatestByInternalOrExternalUserIdAndDataSourceId(userId, dataSourceId) ?:
-            throw IllegalArgumentException("Access params not found for $dataSourceId/$userId")
-    }
+    override fun getCurrentForInternalUserIdAndDataSource(
+        userId: String,
+        dataSourceId: String,
+    ): AccessParams =
+        repository.getLatestByInternalOrExternalUserIdAndDataSourceId(userId, dataSourceId)
+            ?: throw IllegalArgumentException("Access params not found for $dataSourceId/$userId")
 
     /**
      * Checks whether an [AccessParams] entry is present.
@@ -34,7 +37,8 @@ class AccessParamsServiceHost(private val repository: IAccessParamsRepository) :
      *
      * @return True if it is present, false otherwise.
      */
-    override fun isUserAlreadyRegistered(userId: String, dataSourceId: String): Boolean {
-        return repository.existsByInternalOrExternalUserIdAndDataSourceId(userId, dataSourceId)
-    }
+    override fun isUserAlreadyRegistered(
+        userId: String,
+        dataSourceId: String,
+    ): Boolean = repository.existsByInternalOrExternalUserIdAndDataSourceId(userId, dataSourceId)
 }

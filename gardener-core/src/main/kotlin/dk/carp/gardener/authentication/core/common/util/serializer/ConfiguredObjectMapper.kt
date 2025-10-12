@@ -9,11 +9,10 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
  * configured.
  */
 class ConfiguredObjectMapper {
-
     companion object {
-        val instance: ObjectMapper = ObjectMapper()
-            .registerModule(KotlinModule.Builder().build())
-            .registerModule(JavaTimeModule())
+        val instance: ObjectMapper =
+            ObjectMapper()
+                .registerModule(KotlinModule.Builder().build())
+                .registerModule(JavaTimeModule())
     }
-
 }

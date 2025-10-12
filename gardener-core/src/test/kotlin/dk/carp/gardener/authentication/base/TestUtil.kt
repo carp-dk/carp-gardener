@@ -6,9 +6,7 @@ import java.net.URL
  * Utility class for test cases.
  */
 class TestUtil private constructor() {
-
     companion object {
-
         /**
          * Reads up a resource from the resources folder and
          * returns the content of the resource as a String.
@@ -22,7 +20,5 @@ class TestUtil private constructor() {
             }
             return resource.readText()
         }
-
     }
-
 }

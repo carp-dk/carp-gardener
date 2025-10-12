@@ -5,7 +5,6 @@ import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
 
 interface IDataCollectionOperator {
-
     /**
      * Contacts the third-party APIs to collect data.
      *
@@ -16,6 +15,10 @@ interface IDataCollectionOperator {
      *
      * @throws IllegalStateException When the data collection failed.
      */
-    fun executeRequest(uri: Uri, dataType: DataCollectionType, accessParams: AccessParams, callback: (String) -> Unit)
-
+    fun executeRequest(
+        uri: Uri,
+        dataType: DataCollectionType,
+        accessParams: AccessParams,
+        callback: (String) -> Unit,
+    )
 }

@@ -12,14 +12,13 @@ import java.time.Instant
  * Integration tests for [RabbitMqDataPublisher]
  */
 class RabbitPublisherTest : ImplementationTest() {
-
     @Test
     fun dataGetsPublished(testContext: VertxTestContext) {
-        val transformedData = TransformedData("test", "test", FitbitDataCollectionType.ACTIVITIES, Instant.now(), mapOf("test" to "test"))
+        val transformedData =
+            TransformedData("test", "test", FitbitDataCollectionType.ACTIVITIES, Instant.now(), mapOf("test" to "test"))
 
         mainVerticle.publisher.publishCollectedData(transformedData)
 
         testContext.completeNow()
     }
-
 }

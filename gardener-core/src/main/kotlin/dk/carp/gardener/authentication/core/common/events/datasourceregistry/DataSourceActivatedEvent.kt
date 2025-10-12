@@ -7,4 +7,6 @@ import dk.carp.gardener.authentication.core.common.events.eventbus.DataSourceEve
  *
  * Fired when a data source is activated.
  */
-data class DataSourceActivatedEvent(override val dataSourceId: String): DataSourceEvent()
+data class DataSourceActivatedEvent(
+    override val dataSourceId: String,
+) : DataSourceEvent()

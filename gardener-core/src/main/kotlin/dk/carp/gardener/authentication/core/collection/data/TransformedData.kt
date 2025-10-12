@@ -26,5 +26,5 @@ data class TransformedData(
     /**
      * The third-party data in the correct format.
      */
-    val value: Any
+    val value: Any,
 )

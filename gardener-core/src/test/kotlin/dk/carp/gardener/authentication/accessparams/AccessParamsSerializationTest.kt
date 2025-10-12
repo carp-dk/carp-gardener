@@ -16,18 +16,18 @@ import kotlin.test.assertNotNull
  * Tests the serialization of [AccessParams] objects.
  */
 class AccessParamsSerializationTest {
-
     private val fitbitAccessParams = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/fitbit/fitbit_access_params.json"))
     private val garminAccessParams = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_access_params.json"))
 
     @Test
     fun oauth2SAccessParamsCanBeSerializedToJson() {
-        val oAuth2AccessParams = OAuth2AccessParams(
-            internalUserId = "userId",
-            dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
-            params = fitbitAccessParams,
-            externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID
-        )
+        val oAuth2AccessParams =
+            OAuth2AccessParams(
+                internalUserId = "userId",
+                dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
+                params = fitbitAccessParams,
+                externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
+            )
 
         val serialized = ConfiguredObjectMapper.instance.writeValueAsString(oAuth2AccessParams)
         val deserializedParams = ConfiguredObjectMapper.instance.readValue(serialized, OAuth2AccessParams::class.java)
@@ -38,12 +38,13 @@ class AccessParamsSerializationTest {
 
     @Test
     fun oauth1AccessParamsCanBeSerializedToJson() {
-        val oAuth1AccessParams = OAuth1AccessParams(
-            internalUserId = "userId",
-            dataSourceId = GarminDataSource.DATA_SOURCE_ID,
-            params = garminAccessParams,
-            externalUserId = TestProperties.GARMIN_TEST_USER_EXTERNAL_ID
-        )
+        val oAuth1AccessParams =
+            OAuth1AccessParams(
+                internalUserId = "userId",
+                dataSourceId = GarminDataSource.DATA_SOURCE_ID,
+                params = garminAccessParams,
+                externalUserId = TestProperties.GARMIN_TEST_USER_EXTERNAL_ID,
+            )
 
         val serialized = ConfiguredObjectMapper.instance.writeValueAsString(oAuth1AccessParams)
         val deserializedParams = ConfiguredObjectMapper.instance.readValue(serialized, OAuth1AccessParams::class.java)
@@ -51,5 +52,4 @@ class AccessParamsSerializationTest {
         assertNotNull(deserializedParams)
         assertEquals(oAuth1AccessParams.id, deserializedParams.id)
     }
-
 }

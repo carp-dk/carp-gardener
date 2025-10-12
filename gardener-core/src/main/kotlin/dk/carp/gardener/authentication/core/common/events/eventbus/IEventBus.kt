@@ -6,7 +6,6 @@ import kotlin.reflect.KClass
  * A message bus with a publishing/subscribe mechanism to distribute integration events across application services.
  */
 interface IEventBus {
-
     /**
      * Subscribe to an [IntegrationEvent].
      * This is not data source specific, every handler is executed.
@@ -17,7 +16,11 @@ interface IEventBus {
      *
      * @throws IllegalArgumentException When trying to register a handler that is already registered.
      */
-    fun subscribe(subscriber: KClass<*>, eventType: KClass<out IntegrationEvent>, handler: (IntegrationEvent) -> Unit)
+    fun subscribe(
+        subscriber: KClass<*>,
+        eventType: KClass<out IntegrationEvent>,
+        handler: (IntegrationEvent) -> Unit,
+    )
 
     /**
      * Subscribe to a [DataSourceEvent].
@@ -31,7 +34,12 @@ interface IEventBus {
      *
      * @throws IllegalArgumentException When trying to register a handler that is already registered.
      */
-    fun subscribe(subscriber: KClass<*>, eventType: KClass<out DataSourceEvent>, dataSourceId: String, handler: (DataSourceEvent) -> Unit)
+    fun subscribe(
+        subscriber: KClass<*>,
+        eventType: KClass<out DataSourceEvent>,
+        dataSourceId: String,
+        handler: (DataSourceEvent) -> Unit,
+    )
 
     /**
      * Publish the specified [event].
@@ -39,6 +47,8 @@ interface IEventBus {
      * @param eventSource Who fires the event.
      * @param event The actual event that is being fired.
      */
-    fun publish(eventSource: KClass<*>, event: IntegrationEvent)
-
+    fun publish(
+        eventSource: KClass<*>,
+        event: IntegrationEvent,
+    )
 }

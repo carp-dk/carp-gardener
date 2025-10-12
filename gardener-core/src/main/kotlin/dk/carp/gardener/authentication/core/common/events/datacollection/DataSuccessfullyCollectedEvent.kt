@@ -25,5 +25,5 @@ data class DataSuccessfullyCollectedEvent(
     /**
      * Time of collection.
      */
-    val collectedAt: Instant
+    val collectedAt: Instant,
 ) : IntegrationEvent()

@@ -10,5 +10,5 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class CarpDataPoint(
     var carpHeader: CarpDataPointHeader? = null,
-    var carpBody: JsonNode? = null
+    var carpBody: JsonNode? = null,
 )

@@ -1,13 +1,13 @@
 package dk.carp.gardener.authentication.core.common.events.datacollection
 
-import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
-import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
-import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import dk.carp.gardener.authentication.core.common.accessparams.OAuth1AccessParams
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth1.OAuth1ClientSettings
-import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
+import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
+import dk.carp.gardener.authentication.core.common.accessparams.OAuth1AccessParams
+import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
+import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import dk.carp.gardener.authentication.core.common.events.eventbus.IntegrationEvent
+import dk.carp.gardener.authentication.core.common.util.uri.Uri
 
 /**
  * [IntegrationEvent] definitions for data collection.
@@ -27,9 +27,8 @@ sealed class DataCollectionExecutionEvent(
     /**
      * Where the data can be collected.
      */
-    val uri: Uri
+    val uri: Uri,
 ) : IntegrationEvent() {
-
     /**
      * OAuth1 specific [DataCollectionExecutionEvent].
      */
@@ -37,7 +36,7 @@ sealed class DataCollectionExecutionEvent(
         accessParams: OAuth1AccessParams,
         dataIdentifier: DataCollectionType,
         uri: Uri,
-        val clientSettings: OAuth1ClientSettings
+        val clientSettings: OAuth1ClientSettings,
     ) : DataCollectionExecutionEvent(accessParams, dataIdentifier, uri)
 
     /**
@@ -47,7 +46,6 @@ sealed class DataCollectionExecutionEvent(
         accessParams: OAuth2AccessParams,
         dataIdentifier: DataCollectionType,
         uri: Uri,
-        val clientSettings: OAuth2ClientSettings
+        val clientSettings: OAuth2ClientSettings,
     ) : DataCollectionExecutionEvent(accessParams, dataIdentifier, uri)
-
 }

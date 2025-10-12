@@ -6,5 +6,5 @@ package dk.carp.gardener.authentication.core.authorization.authorizationstate
 class OAuth2AuthorizationState(
     userId: String,
     dataSourceId: String,
-    applicationData: String? = null
+    applicationData: String? = null,
 ) : AuthorizationState(userId = userId, dataSourceId = dataSourceId, applicationData = applicationData)

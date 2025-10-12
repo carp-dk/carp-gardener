@@ -14,9 +14,15 @@ class OAuth1DataCollectionOperatorBuilder(
     private val stateService: IAuthorizationStateService,
     private val accessParamsService: IAccessParamsService,
     private val garminAccessParams: JsonNode,
-    private val garminStressData: JsonNode
+    private val garminStressData: JsonNode,
 ) : IOAuth1DataCollectionOperatorBuilder {
-    override fun createDataCollectionOperatorWithClientSettings(clientSettings: OAuth1ClientSettings): IDataCollectionOperator {
-        return OAuth1Operator(stateService, accessParamsService, garminAccessParams = garminAccessParams, garminStressData = garminStressData)
-    }
+    override fun createDataCollectionOperatorWithClientSettings(
+        clientSettings: OAuth1ClientSettings
+    ): IDataCollectionOperator =
+        OAuth1Operator(
+            stateService,
+            accessParamsService,
+            garminAccessParams = garminAccessParams,
+            garminStressData = garminStressData,
+        )
 }

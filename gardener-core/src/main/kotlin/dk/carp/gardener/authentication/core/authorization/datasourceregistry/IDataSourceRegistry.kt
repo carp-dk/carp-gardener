@@ -2,12 +2,10 @@ package dk.carp.gardener.authentication.core.authorization.datasourceregistry
 
 import dk.carp.gardener.authentication.core.authorization.datasource.IDataSource
 
-
 /**
  * Application service which stores and retrieves [IDataSource] instances.
  */
 interface IDataSourceRegistry {
-
     /**
      * Returns an [IDataSource] instance with the given [id].
      *

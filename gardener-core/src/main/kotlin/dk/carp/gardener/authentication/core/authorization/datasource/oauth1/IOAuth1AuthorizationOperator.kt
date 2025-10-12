@@ -1,13 +1,12 @@
 package dk.carp.gardener.authentication.core.authorization.datasource.oauth1
 
-import dk.carp.gardener.authentication.core.common.accessparams.OAuth1AccessParams
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth1AuthorizationRequestParams
+import dk.carp.gardener.authentication.core.common.accessparams.OAuth1AccessParams
 
 /**
  * Defines the necessary functions to complete the OAuth1 authorization flow.
  */
 interface IOAuth1AuthorizationOperator {
-
     /**
      * Returns a completed authorization URI string that can be used to redirect the user
      * to the vendor's website to authorize.
@@ -21,7 +20,11 @@ interface IOAuth1AuthorizationOperator {
      *
      * @return URI string.
      */
-    fun getCompleteAuthorizationUrlForUser(stateId: String, requestToken: OAuth1RequestToken, params: OAuth1AuthorizationRequestParams): String
+    fun getCompleteAuthorizationUrlForUser(
+        stateId: String,
+        requestToken: OAuth1RequestToken,
+        params: OAuth1AuthorizationRequestParams,
+    ): String
 
     /**
      * Returns an OAuth1 Unsigned Token pair from the vendor.
@@ -47,6 +50,11 @@ interface IOAuth1AuthorizationOperator {
      *
      * @throws IllegalStateException When an error is encountered during the communication with the vendor.
      */
-    fun acquireAccessToken(userId: String, dataSourceId: String, requestToken: OAuth1RequestToken, verifier: String, params: OAuth1AuthorizationRequestParams): OAuth1AccessParams
-
+    fun acquireAccessToken(
+        userId: String,
+        dataSourceId: String,
+        requestToken: OAuth1RequestToken,
+        verifier: String,
+        params: OAuth1AuthorizationRequestParams,
+    ): OAuth1AccessParams
 }

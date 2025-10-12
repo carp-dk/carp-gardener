@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory
 /**
  * Provides a MongoDB implementation for [IAuthorizationStateRepository].
  */
-class MongoAuthorizationStateRepository(private val client: MongoClient) :
-    IAuthorizationStateRepository {
-
+class MongoAuthorizationStateRepository(
+    private val client: MongoClient,
+) : IAuthorizationStateRepository {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(MongoAuthorizationStateRepository::class.java)
     }
@@ -27,9 +27,10 @@ class MongoAuthorizationStateRepository(private val client: MongoClient) :
      * @return [AuthorizationState] or null if it's not found.
      */
     override fun findById(id: String): AuthorizationState? {
-        val query = JsonObject().apply {
-            put("id", id)
-        }
+        val query =
+            JsonObject().apply {
+                put("id", id)
+            }
 
         val future = client.find(authorizationStateTableName, query)
         while (future.result() == null) {}
@@ -44,7 +45,8 @@ class MongoAuthorizationStateRepository(private val client: MongoClient) :
         }
         LOGGER.info("Authorization state found for id $id.")
 
-        return results.map { it.remove("_id") }
+        return results
+            .map { it.remove("_id") }
             .map { ConfiguredObjectMapper.instance.readValue(results[0].encode(), AuthorizationState::class.java) }
             .maxByOrNull { it.createdAt }!!
     }
@@ -65,5 +67,4 @@ class MongoAuthorizationStateRepository(private val client: MongoClient) :
             }
         }
     }
-
 }

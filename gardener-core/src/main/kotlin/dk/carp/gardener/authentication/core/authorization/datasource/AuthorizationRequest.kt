@@ -7,4 +7,7 @@ import dk.carp.gardener.authentication.core.authorization.authorizationstate.Aut
  * during the authorization process and an [authorizationState] object that specifically
  * created for the user and the data source to save authorization state in-between calls.
  */
-data class AuthorizationRequest(val authorizationUrl: String, val authorizationState: AuthorizationState)
+data class AuthorizationRequest(
+    val authorizationUrl: String,
+    val authorizationState: AuthorizationState,
+)

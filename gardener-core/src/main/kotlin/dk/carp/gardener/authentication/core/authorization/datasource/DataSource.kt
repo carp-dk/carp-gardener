@@ -1,18 +1,18 @@
 package dk.carp.gardener.authentication.core.authorization.datasource
 
-import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
-import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsService
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.AuthorizationState
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
-import dk.carp.gardener.authentication.core.common.util.uri.Uri
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth1.OAuth1DataSource
+import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
+import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsService
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
-import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionPreparationEvent
-import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
-import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionExecutionEvent
+import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionPreparationEvent
 import dk.carp.gardener.authentication.core.common.events.eventbus.DataSourceEvent
+import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
+import dk.carp.gardener.authentication.core.common.util.uri.Uri
 
 /**
  * A common superclass for both OAuth1 and OAuth2 data sources.
@@ -20,16 +20,18 @@ import dk.carp.gardener.authentication.core.common.events.eventbus.DataSourceEve
 abstract class DataSource(
     protected val accessParamsService: IAccessParamsService,
     protected val stateService: IAuthorizationStateService,
-    protected val eventBus: IEventBus
+    protected val eventBus: IEventBus,
 ) : IDataSource {
-
     init {
         @Suppress("UNCHECKED_CAST")
         eventBus.subscribe(
             subscriber = this::class,
             eventType = DataCollectionPreparationEvent::class,
             dataSourceId = this.getId(),
-            handler = { event: DataCollectionPreparationEvent -> prepareDataCollection(event) } as (DataSourceEvent) -> Unit
+            handler =
+            { event: DataCollectionPreparationEvent -> prepareDataCollection(event) } as (
+                DataSourceEvent,
+            ) -> Unit,
         )
     }
 
@@ -48,10 +50,10 @@ abstract class DataSource(
     override fun initiateUserAuthorization(
         userId: String,
         dataSourceId: String,
-        params: AuthorizationRequestParams
+        params: AuthorizationRequestParams,
     ): AuthorizationRequest {
-        if (accessParamsService.isUserAlreadyRegistered(userId, dataSourceId)) {
-            throw IllegalArgumentException("User $dataSourceId/$userId is already authorized. Request aborted.")
+        require(accessParamsService.isUserAlreadyRegistered(userId, dataSourceId).not()) {
+            "User $dataSourceId/$userId is already authorized. Request aborted."
         }
 
         val state = registerAuthorizationRequestForUser(userId, dataSourceId, params.applicationData)
@@ -67,19 +69,19 @@ abstract class DataSource(
      * @throws IllegalArgumentException When no access parameters were found for the user
      * for this data source.
      */
-    override fun getAccessParametersFor(userId: String): AccessParams {
-        return accessParamsService.getCurrentForInternalUserIdAndDataSource(userId, this.getId())
-    }
+    override fun getAccessParametersFor(userId: String): AccessParams =
+        accessParamsService.getCurrentForInternalUserIdAndDataSource(userId, this.getId())
 
     /**
      * Returns the [AuthorizationType] of the data source,
      * corresponding to the authorization mechanism it uses.
      */
-    override fun getAuthorizationType(): AuthorizationType {
-        return if (this is OAuth1DataSource) {
+    override fun getAuthorizationType(): AuthorizationType =
+        if (this is OAuth1DataSource) {
             AuthorizationType.OAUTH1
-        } else AuthorizationType.OAUTH2
-    }
+        } else {
+            AuthorizationType.OAUTH2
+        }
 
     /**
      * A handler that is executed when a [DataCollectionPreparationEvent] is fired.
@@ -103,8 +105,8 @@ abstract class DataSource(
     protected abstract fun assembleDataCollectionUri(
         accessParams: AccessParams,
         dataType: DataCollectionType,
-        rawPing: JsonNode
-    ) : Uri
+        rawPing: JsonNode,
+    ): Uri
 
     /**
      * Publishes authorization protocol specific [DataCollectionExecutionEvent].
@@ -116,14 +118,18 @@ abstract class DataSource(
     protected abstract fun publishDataCollectionExecutionEvent(
         dataType: DataCollectionType,
         dataCollectionUri: Uri,
-        accessParams: AccessParams
+        accessParams: AccessParams,
     )
 
     /**
      * Creates a new [AuthorizationState] for the given user indicated by the [userId].
      * and for the data source indicated by the [dataSourceId].
      */
-    protected abstract fun registerAuthorizationRequestForUser(userId: String, dataSourceId: String, applicationData: String?): AuthorizationState
+    protected abstract fun registerAuthorizationRequestForUser(
+        userId: String,
+        dataSourceId: String,
+        applicationData: String?,
+    ): AuthorizationState
 
     /**
      * Creates a completed Authorization redirect URI for the data source.
@@ -133,5 +139,8 @@ abstract class DataSource(
      * @return A completed URI string customized with the state id and given parameters.
      * where the user should be redirected to.
      */
-    protected abstract fun getAuthorizationRedirectUri(state: AuthorizationState, params: AuthorizationRequestParams): String
+    protected abstract fun getAuthorizationRedirectUri(
+        state: AuthorizationState,
+        params: AuthorizationRequestParams,
+    ): String
 }

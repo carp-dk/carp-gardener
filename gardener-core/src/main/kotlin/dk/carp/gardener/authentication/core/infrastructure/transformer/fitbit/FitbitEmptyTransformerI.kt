@@ -10,25 +10,13 @@ import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
  * The class is open due to mocking purposes during testing.
  */
 open class FitbitEmptyTransformerI : FitbitDataTypeTransformer {
+    override fun transformActivities(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformActivities(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformHeartRate(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformHeartRate(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformBody(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformBody(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformSleep(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformSleep(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
-    override fun transformFood(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
+    override fun transformFood(data: ThirdPartyData): List<Any> = listOf(data)
 }

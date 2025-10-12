@@ -7,15 +7,9 @@ import com.github.scribejava.core.builder.api.DefaultApi20
  */
 class OAuth2ApiDefinition(
     private val accessTokenEndpoint: String,
-    private val authorizationBaseUrl: String
+    private val authorizationBaseUrl: String,
 ) : DefaultApi20() {
+    override fun getAccessTokenEndpoint(): String = accessTokenEndpoint
 
-    override fun getAccessTokenEndpoint(): String {
-        return accessTokenEndpoint
-    }
-
-    override fun getAuthorizationBaseUrl(): String {
-        return authorizationBaseUrl
-    }
-
+    override fun getAuthorizationBaseUrl(): String = authorizationBaseUrl
 }

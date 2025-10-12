@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.datasources
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.OAuth2Test
 import dk.carp.gardener.authentication.base.TestProperties
 import dk.carp.gardener.authentication.base.TestUtil
@@ -15,21 +16,28 @@ import dk.carp.gardener.authentication.core.common.events.datacollection.DataSuc
 import dk.carp.gardener.authentication.core.common.events.eventbus.IntegrationEvent
 import dk.carp.gardener.authentication.core.common.events.oauth2.OAuth2Event
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
-import com.fasterxml.jackson.databind.JsonNode
-import org.mockito.kotlin.*
-import kotlin.test.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeast
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Integration tests for [FitbitDataSource].
  */
 open class FitbitTest : OAuth2Test() {
-
-    private val fitbitActivitiesPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_activities_ping.json"))
-    private val fitbitExpiredAccessParams: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_expired_access_params.json"))
-    private val fitbitInvalidPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_invalid_ping.json"))
+    private val fitbitActivitiesPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_activities_ping.json"))
+    private val fitbitExpiredAccessParams: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_expired_access_params.json"))
+    private val fitbitInvalidPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(TestUtil.getResourceAsText("/fitbit/fitbit_invalid_ping.json"))
 
     @Test
     fun returnsTheCorrectId() {
@@ -132,13 +140,17 @@ open class FitbitTest : OAuth2Test() {
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidPing() {
         val notificationText = "fail"
-        assertFailsWith<IllegalArgumentException> { fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidDataType() {
         val notificationText = fitbitInvalidPing.toString()
-        assertFailsWith<IllegalArgumentException> { fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
@@ -150,12 +162,15 @@ open class FitbitTest : OAuth2Test() {
         // Save a state for the authorization
         val request = fitbitDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -176,12 +191,15 @@ open class FitbitTest : OAuth2Test() {
         // Save a state for the authorization
         val request = fitbitDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -214,12 +232,13 @@ open class FitbitTest : OAuth2Test() {
     @Test
     fun accessParamsGetRefreshedWhenExpired() {
         // Save expired user access params
-        val params =  OAuth2AccessParams(
-            internalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
-            dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
-            params = fitbitExpiredAccessParams,
-            externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID
-        )
+        val params =
+            OAuth2AccessParams(
+                internalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
+                dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
+                params = fitbitExpiredAccessParams,
+                externalUserId = TestProperties.FITBIT_TEST_USER_EXTERNAL_ID,
+            )
         accessParamService.addParams(params)
 
         // Fire preparation events
@@ -332,8 +351,7 @@ open class FitbitTest : OAuth2Test() {
             userId,
             dataSourceId,
             "authorization_code",
-            fitbitDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams
+            fitbitDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams,
         )
     }
-
 }

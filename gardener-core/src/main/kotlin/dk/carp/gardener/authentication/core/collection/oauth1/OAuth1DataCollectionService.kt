@@ -16,17 +16,17 @@ class OAuth1DataCollectionService(
     eventBus: IEventBus,
     publisher: IDataPublisher,
     transformerRegistry: IDataTypeTransformerRegistry,
-    private val operator: IOAuth1DataCollectionOperatorBuilder
+    private val operator: IOAuth1DataCollectionOperatorBuilder,
 ) : DataCollectionService(eventBus, publisher, transformerRegistry) {
-
     init {
         @Suppress("UNCHECKED_CAST")
         eventBus.subscribe(
             subscriber = this::class,
             eventType = DataCollectionExecutionEvent.OAuth1ExecutionEvent::class,
-            handler = {
-                    event: DataCollectionExecutionEvent.OAuth1ExecutionEvent -> executeDataCollectionRequest(event)
-            } as (IntegrationEvent) -> Unit
+            handler =
+            { event: DataCollectionExecutionEvent.OAuth1ExecutionEvent ->
+                executeDataCollectionRequest(event)
+            } as (IntegrationEvent) -> Unit,
         )
     }
 
@@ -37,5 +37,4 @@ class OAuth1DataCollectionService(
         event as DataCollectionExecutionEvent.OAuth1ExecutionEvent
         return operator.createDataCollectionOperatorWithClientSettings(event.clientSettings)
     }
-
 }

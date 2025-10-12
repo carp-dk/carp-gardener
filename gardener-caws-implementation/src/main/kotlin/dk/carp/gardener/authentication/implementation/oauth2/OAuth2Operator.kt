@@ -33,9 +33,9 @@ import java.time.Instant
 class OAuth2Operator(
     private val clientSettings: dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings,
     vertx: Vertx,
-    private val properties: PropertiesConfig
-) : IOAuth2AuthorizationOperator, IDataCollectionOperator {
-
+    private val properties: PropertiesConfig,
+) : IOAuth2AuthorizationOperator,
+    IDataCollectionOperator {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(OAuth2Operator::class.java)
     }
@@ -43,10 +43,11 @@ class OAuth2Operator(
     private val api: DefaultApi20 =
         OAuth2ApiDefinition(clientSettings.accessUri, clientSettings.authorizationUri)
 
-    private val service: OAuth20Service = ServiceBuilder(clientSettings.clientId)
-        .apiSecret(clientSettings.clientSecret)
-        .callback(clientSettings.callbackUri)
-        .build(api)
+    private val service: OAuth20Service =
+        ServiceBuilder(clientSettings.clientId)
+            .apiSecret(clientSettings.clientSecret)
+            .callback(clientSettings.callbackUri)
+            .build(api)
 
     private val webClient = WebClient.create(vertx)
 
@@ -66,17 +67,19 @@ class OAuth2Operator(
     override fun getCompleteAuthorizationUrlForState(
         stateId: String,
         requestedScopes: String,
-        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
+        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams,
     ): String {
         if (params.additionalParamsForGrants.getMap().isNotEmpty()) {
-            return service.createAuthorizationUrlBuilder()
+            return service
+                .createAuthorizationUrlBuilder()
                 .additionalParams(params.additionalParamsForGrants.getMap())
                 .scope(requestedScopes)
                 .state(stateId)
                 .build()
         }
 
-        return service.createAuthorizationUrlBuilder()
+        return service
+            .createAuthorizationUrlBuilder()
             .scope(requestedScopes)
             .state(stateId)
             .build()
@@ -101,7 +104,7 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         authorizationCode: String,
-        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
+        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams,
     ): OAuth2AccessParams {
         val request = createAccessTokenRequest(authorizationCode, params.additionalParamsForTokens.getMap())
         val rawResponse: String
@@ -114,7 +117,8 @@ class OAuth2Operator(
 
         val result = extractParams(userId, dataSourceId, rawResponse)
         if (dataSourceId == FitbitDataSource.DATA_SOURCE_ID) {
-            webClient.postAbs("https://api.fitbit.com/1/user/-/apiSubscriptions/${userId}.json?subscriberId=1")
+            webClient
+                .postAbs("https://api.fitbit.com/1/user/-/apiSubscriptions/$userId.json?subscriberId=1")
                 .putHeader("Authorization", "Bearer ${result.extractAccessToken()}")
                 .putHeader("Content-Length", "0")
                 .send()
@@ -124,8 +128,7 @@ class OAuth2Operator(
                     } else {
                         LOGGER.info("(HTTP ${res.statusCode()}) Fitbit notification created for user $userId")
                     }
-                }
-                .onFailure { res -> LOGGER.info("Fitbit notification creation failed for user $userId: ${res.message}") }
+                }.onFailure { res -> LOGGER.info("Fitbit notification creation failed for user $userId: ${res.message}") }
         }
         if (dataSourceId == WithingsDataSource.DATA_SOURCE_ID) {
             // Get a nounce
@@ -134,9 +137,15 @@ class OAuth2Operator(
             val nonceTimestamp = Instant.now().epochSecond
             val nonceConcatenatedParams = "$nonceAction,$clientId,$nonceTimestamp"
             val clientSecret = clientSettings.clientSecret
-            val nonceSignature = Hashing.hmacSha256(clientSecret.encodeToByteArray()).hashString(nonceConcatenatedParams, StandardCharsets.UTF_8).toString()
+            val nonceSignature =
+                Hashing
+                    .hmacSha256(
+                        clientSecret.encodeToByteArray(),
+                    ).hashString(nonceConcatenatedParams, StandardCharsets.UTF_8)
+                    .toString()
 
-            webClient.postAbs("https://wbsapi.withings.net/v2/signature")
+            webClient
+                .postAbs("https://wbsapi.withings.net/v2/signature")
                 .addQueryParam("action", nonceAction)
                 .addQueryParam("client_id", clientId)
                 .addQueryParam("timestamp", nonceTimestamp.toString())
@@ -150,9 +159,15 @@ class OAuth2Operator(
                     val subCallback = properties.getProperty("withings.client.collection.callback.uri")
                     val subAppli = "16"
                     val subConcatenatedParams = "$subAction,$clientId,$nonce"
-                    val subSignature = Hashing.hmacSha256(clientSecret.encodeToByteArray()).hashString(subConcatenatedParams, StandardCharsets.UTF_8).toString()
+                    val subSignature =
+                        Hashing
+                            .hmacSha256(
+                                clientSecret.encodeToByteArray(),
+                            ).hashString(subConcatenatedParams, StandardCharsets.UTF_8)
+                            .toString()
 
-                    webClient.postAbs("https://wbsapi.withings.net/notify")
+                    webClient
+                        .postAbs("https://wbsapi.withings.net/notify")
                         .putHeader("Authorization", "Bearer ${result.extractAccessToken()}")
                         .putHeader("Content-Length", "0")
                         .addQueryParam("action", subAction)
@@ -162,11 +177,12 @@ class OAuth2Operator(
                         .addQueryParam("client_id", clientId)
                         .addQueryParam("signature", subSignature)
                         .send()
-                        .onSuccess { subRes -> LOGGER.info("Withings subscription created for user $userId with appli 16 - (HTTP ${subRes.statusCode()}) ${subRes.bodyAsString()}") }
-                        .onFailure { subRes -> LOGGER.info("Withings subscription creation failed for user $userId: ${subRes.message}") }
-
-                }
-                .onFailure { res -> LOGGER.info("Error while getting nounce for Withings subscription for user $userId: ${res.message}") }
+                        .onSuccess { subRes ->
+                            LOGGER.info(
+                                "Withings subscription created for user $userId with appli 16 - (HTTP ${subRes.statusCode()}) ${subRes.bodyAsString()}",
+                            )
+                        }.onFailure { subRes -> LOGGER.info("Withings subscription creation failed for user $userId: ${subRes.message}") }
+                }.onFailure { res -> LOGGER.info("Error while getting nounce for Withings subscription for user $userId: ${res.message}") }
         }
 
         return result
@@ -189,7 +205,7 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         refreshToken: String,
-        params: dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams
+        params: dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams,
     ): OAuth2AccessParams {
         val request = createRefreshTokenRequest(refreshToken, params.additionalParams.getMap())
         val rawResponse: String
@@ -213,27 +229,46 @@ class OAuth2Operator(
      *
      * @throws IllegalStateException When the data collection failed.
      */
-    override fun executeRequest(uri: Uri, dataType: DataCollectionType, accessParams: AccessParams, callback: (String) -> Unit) {
-        val request = webClient.getAbs(uri.uri)
-            .putHeader("Authorization", "Bearer ${accessParams.extractAccessToken()}")
+    override fun executeRequest(
+        uri: Uri,
+        dataType: DataCollectionType,
+        accessParams: AccessParams,
+        callback: (String) -> Unit,
+    ) {
+        val request =
+            webClient
+                .getAbs(uri.uri)
+                .putHeader("Authorization", "Bearer ${accessParams.extractAccessToken()}")
         if (uri.queryParams != null) {
             uri.queryParams!!.forEach { request.addQueryParam(it.key, it.value) }
         }
 
-        request.send()
+        request
+            .send()
             .onSuccess { res ->
                 if (res.statusCode() < 200 || res.statusCode() >= 300) {
-                    throw IllegalStateException("OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.bodyAsString()}")
+                    throw IllegalStateException(
+                        "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.bodyAsString()}",
+                    )
                 } else {
-                    LOGGER.info("OAuth2 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.")
+                    LOGGER.info(
+                        "OAuth2 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.",
+                    )
                     callback(res.bodyAsString())
                 }
+            }.onFailure { res ->
+                throw IllegalStateException(
+                    "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.message}",
+                )
             }
-            .onFailure { res -> throw IllegalStateException("OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.message}") }
     }
 
-    private fun extractParams(userId: String, dataSourceId: String, rawResponse: String): OAuth2AccessParams {
-        return when (dataSourceId) {
+    private fun extractParams(
+        userId: String,
+        dataSourceId: String,
+        rawResponse: String,
+    ): OAuth2AccessParams =
+        when (dataSourceId) {
             FitbitDataSource.DATA_SOURCE_ID -> {
                 FitbitAccessTokenResponseExtractor.getAccessParamsFromResponse(userId, dataSourceId, rawResponse)
             }
@@ -241,21 +276,28 @@ class OAuth2Operator(
                 WithingsAccessTokenResponseExtractor.getAccessParamsFromResponse(userId, dataSourceId, rawResponse)
             }
             DexcomDataSource.DATA_SOURCE_ID -> {
-                dk.carp.gardener.authentication.core.authorization.devices.dexcom.DexcomAccessTokenResponseExtractor.getAccessParamsFromResponse(userId, dataSourceId, rawResponse)
+                dk.carp.gardener.authentication.core.authorization.devices.dexcom.DexcomAccessTokenResponseExtractor
+                    .getAccessParamsFromResponse(
+                        userId,
+                        dataSourceId,
+                        rawResponse,
+                    )
             }
             else -> {
                 throw IllegalArgumentException("Access parameter extraction failed: DataSourceId $dataSourceId is not valid.")
             }
         }
-    }
 
-    private fun createAccessTokenRequest(code: String, additionalParams: Map<String, String>?): OAuthRequest {
+    private fun createAccessTokenRequest(
+        code: String,
+        additionalParams: Map<String, String>?,
+    ): OAuthRequest {
         val params = AccessTokenRequestParams.create(code)
         val request = OAuthRequest(api.accessTokenVerb, api.accessTokenEndpoint)
         api.clientAuthentication.addClientAuthentication(request, service.apiKey, service.apiSecret)
         request.addParameter(OAuthConstants.CODE, params.code)
 
-        additionalParams?.forEach { (key, value) -> request.addBodyParameter(key, value)}
+        additionalParams?.forEach { (key, value) -> request.addBodyParameter(key, value) }
         request.addBodyParameter("grant_type", "authorization_code")
         request.addBodyParameter("client_id", service.apiKey)
         request.addBodyParameter("client_secret", service.apiSecret)
@@ -279,12 +321,16 @@ class OAuth2Operator(
         return request
     }
 
-    private fun createRefreshTokenRequest(refreshToken: String?, additionalParams: Map<String, String>?, scope: String? = null): OAuthRequest {
+    private fun createRefreshTokenRequest(
+        refreshToken: String?,
+        additionalParams: Map<String, String>?,
+        scope: String? = null,
+    ): OAuthRequest {
         require(!(refreshToken == null || refreshToken.isEmpty())) { "The refreshToken cannot be null or empty" }
         val request = OAuthRequest(api.accessTokenVerb, api.refreshTokenEndpoint)
         api.clientAuthentication.addClientAuthentication(request, service.apiKey, service.apiSecret)
 
-        additionalParams?.forEach { (key, value) -> request.addBodyParameter(key, value)}
+        additionalParams?.forEach { (key, value) -> request.addBodyParameter(key, value) }
         request.addBodyParameter("grant_type", "refresh_token")
         request.addBodyParameter("client_id", service.apiKey)
         request.addBodyParameter("client_secret", service.apiSecret)
@@ -300,8 +346,5 @@ class OAuth2Operator(
         return request
     }
 
-    private fun sendAccessTokenRequestSync(request: OAuthRequest): String {
-        return service.execute(request).body
-    }
-
+    private fun sendAccessTokenRequestSync(request: OAuthRequest): String = service.execute(request).body
 }

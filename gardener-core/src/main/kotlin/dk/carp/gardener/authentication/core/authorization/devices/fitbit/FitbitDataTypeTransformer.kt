@@ -8,11 +8,13 @@ import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransfor
  * Defines the data transformation functions for each supported [DataCollectionType].
  */
 interface FitbitDataTypeTransformer : IDataTypeTransformer {
-
     fun transformActivities(data: ThirdPartyData): List<Any>
-    fun transformHeartRate(data: ThirdPartyData): List<Any>
-    fun transformBody(data: ThirdPartyData): List<Any>
-    fun transformSleep(data: ThirdPartyData): List<Any>
-    fun transformFood(data: ThirdPartyData): List<Any>
 
+    fun transformHeartRate(data: ThirdPartyData): List<Any>
+
+    fun transformBody(data: ThirdPartyData): List<Any>
+
+    fun transformSleep(data: ThirdPartyData): List<Any>
+
+    fun transformFood(data: ThirdPartyData): List<Any>
 }

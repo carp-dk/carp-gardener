@@ -10,17 +10,9 @@ import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
  * The class is open due to mocking purposes during testing.
  */
 open class WithingsEmptyTransformerI : WithingsDataTypeTransformer {
+    override fun transformActivities(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformActivities(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformHeartList(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformHeartList(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
-    override fun transformSleep(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
+    override fun transformSleep(data: ThirdPartyData): List<Any> = listOf(data)
 }

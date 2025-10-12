@@ -1,7 +1,7 @@
 package dk.carp.gardener.authentication.core.common.accessparams
 
-import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import com.fasterxml.jackson.databind.JsonNode
+import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import java.time.Instant
 
 /**
@@ -12,9 +12,8 @@ class OAuth2AccessParams(
     dataSourceId: String,
     params: JsonNode,
     externalUserId: String? = null,
-    applicationData: String? = null
+    applicationData: String? = null,
 ) : AccessParams(internalUserId, dataSourceId, params, externalUserId, applicationData = applicationData) {
-
     companion object {
         const val ACCESS_TOKEN_KEY = "access_token"
         const val REFRESH_TOKEN_KEY = "refresh_token"
@@ -23,8 +22,19 @@ class OAuth2AccessParams(
         const val SCOPES_KEY = "scope"
     }
 
-    constructor(internalUserId: String, dataSourceId: String, rawJsonResponse: String, externalUserId: String? = null, applicationData: String? = null)
-            : this(internalUserId, dataSourceId, ConfiguredObjectMapper.instance.readTree(rawJsonResponse), externalUserId, applicationData = applicationData)
+    constructor(
+        internalUserId: String,
+        dataSourceId: String,
+        rawJsonResponse: String,
+        externalUserId: String? = null,
+        applicationData: String? = null,
+    ) : this(
+        internalUserId,
+        dataSourceId,
+        ConfiguredObjectMapper.instance.readTree(rawJsonResponse),
+        externalUserId,
+        applicationData = applicationData,
+    )
 
     /**
      * Returns the access_token field.
@@ -32,9 +42,7 @@ class OAuth2AccessParams(
      * This will always be present in the access token response.
      * (Required field according to the IETF)
      */
-    override fun extractAccessToken(): String {
-        return params.get(ACCESS_TOKEN_KEY).textValue()
-    }
+    override fun extractAccessToken(): String = params.get(ACCESS_TOKEN_KEY).textValue()
 
     /**
      * Returns the token_type field.
@@ -42,31 +50,22 @@ class OAuth2AccessParams(
      * This will always be present in the access token response.
      * (Required field according to the IETF)
      */
-    fun extractTokenType(): String {
-        return params.get(TOKEN_TYPE_KEY).textValue()
-    }
+    fun extractTokenType(): String = params.get(TOKEN_TYPE_KEY).textValue()
 
     /**
      * Returns the expires_in field.
      */
-    fun extractExpiresIn(): Long? {
-        return params.get(EXPIRES_IN_KEY)?.asLong()
-
-    }
+    fun extractExpiresIn(): Long? = params.get(EXPIRES_IN_KEY)?.asLong()
 
     /**
      * Returns the refresh_token field.
      */
-    fun extractRefreshToken(): String? {
-        return params.get(REFRESH_TOKEN_KEY)?.textValue()
-    }
+    fun extractRefreshToken(): String? = params.get(REFRESH_TOKEN_KEY)?.textValue()
 
     /**
      * Returns the scope field.
      */
-    fun extractScopes(): String? {
-        return params.get(SCOPES_KEY)?.textValue()
-    }
+    fun extractScopes(): String? = params.get(SCOPES_KEY)?.textValue()
 
     /**
      * Determines whether a token is expired or not.
@@ -76,5 +75,4 @@ class OAuth2AccessParams(
         val expiresIn = extractExpiresIn() ?: return true
         return updatedAt.plusSeconds((expiresIn - 180)) < Instant.now()
     }
-
 }

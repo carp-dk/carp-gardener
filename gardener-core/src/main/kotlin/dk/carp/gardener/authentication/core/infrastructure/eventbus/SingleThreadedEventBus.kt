@@ -11,23 +11,25 @@ import kotlin.reflect.KClass
  * The class is open due to mocking purposes during testing.
  */
 open class SingleThreadedEventBus : EventBus() {
-
-  override fun publish(eventSource: KClass<*>, event: IntegrationEvent) {
-    if (!subscribers.containsKey(event::class)) {
-      return
+    override fun publish(
+        eventSource: KClass<*>,
+        event: IntegrationEvent,
+    ) {
+        if (!subscribers.containsKey(event::class)) {
+            return
+        }
+        val handlers: List<Handler> =
+            if (event is DataSourceEvent) {
+                subscribers[event::class]!!.filter { it.dataSourceId != null && it.dataSourceId == event.dataSourceId }
+            } else {
+                subscribers[event::class]!!
+            }
+        handlers.forEach {
+            try {
+                it.handler(event)
+            } catch (ex: Exception) {
+                println("Exception encountered while executing a handler: ${ex.message}")
+            }
+        }
     }
-    val handlers: List<Handler> = if (event is DataSourceEvent) {
-      subscribers[event::class]!!.filter { it.dataSourceId != null && it.dataSourceId == event.dataSourceId }
-    } else {
-      subscribers[event::class]!!
-    }
-    handlers.forEach {
-      try {
-        it.handler(event)
-      } catch (ex: Exception) {
-        println("Exception encountered while executing a handler: ${ex.message}")
-      }
-    }
-  }
-
 }

@@ -12,17 +12,19 @@ enum class WithingsDataCollectionType(
     private val ep: String,
     private val cn: String,
     private val ns: String,
-    val action: String
+    val action: String,
 ) : DataCollectionType {
-
     DAILY_ACTIVITY(
         id = "16",
         ep = "/v2/measure",
         cn = "Withings daily activity summary",
         ns = "com.withings.daily_activity",
-        action = "getactivity"
+        action = "getactivity",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as WithingsDataTypeTransformer
             return transformer.transformActivities(data)
         }
@@ -32,9 +34,12 @@ enum class WithingsDataCollectionType(
         ep = "/v2/heart",
         cn = "Withings ECG recordings",
         ns = "com.withings.heart_list",
-        action = "list"
+        action = "list",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as WithingsDataTypeTransformer
             return transformer.transformHeartList(data)
         }
@@ -44,20 +49,26 @@ enum class WithingsDataCollectionType(
         ep = "/v2/sleep ",
         cn = "Withings sleep summary",
         ns = "com.withings.sleep",
-        action = "getsummary"
+        action = "getsummary",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as WithingsDataTypeTransformer
             return transformer.transformSleep(data)
         }
-    };
+    }, ;
 
     companion object {
         fun from(type: String?): DataCollectionType? = entries.find { it.id == type }
     }
 
     override fun getIdentifier() = id
+
     override fun getEndpoint() = ep
+
     override fun getCustomName() = cn
+
     override fun getNamespace(): String = ns
 }

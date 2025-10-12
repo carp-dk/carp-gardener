@@ -11,9 +11,8 @@ class AuthenticationApplication
  * It starts the [MainVerticle].
  */
 fun main() {
-  System.setProperty("vertx.logger-delegate-factory-class-name", SLF4JLogDelegateFactory::class.java.name)
+    System.setProperty("vertx.logger-delegate-factory-class-name", SLF4JLogDelegateFactory::class.java.name)
 
-  val vertx = Vertx.vertx()
-  vertx.deployVerticle(MainVerticle())
+    val vertx = Vertx.vertx()
+    vertx.deployVerticle(MainVerticle())
 }
-

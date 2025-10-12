@@ -6,5 +6,5 @@ package dk.carp.gardener.authentication.core.authorization.datasource
  */
 enum class AuthorizationType {
     OAUTH1,
-    OAUTH2
+    OAUTH2,
 }

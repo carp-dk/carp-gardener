@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.mock
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.TestProperties
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth1AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
@@ -11,7 +12,6 @@ import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsSer
 import dk.carp.gardener.authentication.core.common.accessparams.OAuth1AccessParams
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import com.fasterxml.jackson.databind.JsonNode
 
 /**
  * Mock [OAuth1Operator].
@@ -20,37 +20,35 @@ class OAuth1Operator(
     private val stateService: IAuthorizationStateService,
     private val accessParamsService: IAccessParamsService,
     private val garminAccessParams: JsonNode,
-    private val garminStressData: JsonNode
-) : IOAuth1AuthorizationOperator, IDataCollectionOperator {
-
+    private val garminStressData: JsonNode,
+) : IOAuth1AuthorizationOperator,
+    IDataCollectionOperator {
     override fun getCompleteAuthorizationUrlForUser(
         stateId: String,
         requestToken: OAuth1RequestToken,
-        params: OAuth1AuthorizationRequestParams
-    ): String {
-        return "url"
-    }
+        params: OAuth1AuthorizationRequestParams,
+    ): String = "url"
 
-    override fun acquireUnsignedRequestToken(params: OAuth1AuthorizationRequestParams): OAuth1RequestToken {
-        return OAuth1RequestToken(
+    override fun acquireUnsignedRequestToken(params: OAuth1AuthorizationRequestParams): OAuth1RequestToken =
+        OAuth1RequestToken(
             "requestToken",
-            "tokenSecret"
+            "tokenSecret",
         )
-    }
 
     override fun acquireAccessToken(
         userId: String,
         dataSourceId: String,
         requestToken: OAuth1RequestToken,
         verifier: String,
-        params: OAuth1AuthorizationRequestParams
+        params: OAuth1AuthorizationRequestParams,
     ): OAuth1AccessParams {
-        val newParams = OAuth1AccessParams(
-            internalUserId = userId,
-            dataSourceId = dataSourceId,
-            params = garminAccessParams,
-            externalUserId = TestProperties.GARMIN_TEST_USER_EXTERNAL_ID
-        )
+        val newParams =
+            OAuth1AccessParams(
+                internalUserId = userId,
+                dataSourceId = dataSourceId,
+                params = garminAccessParams,
+                externalUserId = TestProperties.GARMIN_TEST_USER_EXTERNAL_ID,
+            )
         accessParamsService.addParams(newParams)
         return newParams
     }
@@ -59,9 +57,8 @@ class OAuth1Operator(
         uri: Uri,
         dataType: DataCollectionType,
         accessParams: AccessParams,
-        callback: (String) -> Unit
+        callback: (String) -> Unit,
     ) {
         callback(garminStressData.toString())
     }
-
 }

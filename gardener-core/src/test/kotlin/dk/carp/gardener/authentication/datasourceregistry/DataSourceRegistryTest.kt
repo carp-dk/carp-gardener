@@ -12,7 +12,6 @@ import kotlin.test.assertFailsWith
  * Tests the functionality of [DataSourceRegistryHost].
  */
 class DataSourceRegistryTest : OAuth2Test() {
-
     @Test
     fun dataSourceCanBeSaved() {
         saveDataSource(fitbitDataSource)
@@ -34,5 +33,4 @@ class DataSourceRegistryTest : OAuth2Test() {
     fun saveDataSource(dataSource: IDataSource) {
         dataSourceRegistry.activateDataSource(dataSource)
     }
-
 }

@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.base
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.TestUtil.Companion.getResourceAsText
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth1.OAuth1ClientSettings
 import dk.carp.gardener.authentication.core.authorization.devices.garmin.GarminDataSource
@@ -8,15 +9,13 @@ import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObj
 import dk.carp.gardener.authentication.core.infrastructure.transformer.garmin.GarminEmptyTransformerI
 import dk.carp.gardener.authentication.mock.OAuth1DataCollectionOperatorBuilder
 import dk.carp.gardener.authentication.mock.OAuth1Operator
-import com.fasterxml.jackson.databind.JsonNode
 import org.mockito.Mockito
 
 /**
  * A common test class parent for every data sources that
  * use OAuth1 authorization.
  */
-abstract class OAuth1Test : CoreTest()  {
-
+abstract class OAuth1Test : CoreTest() {
     // OAuth1 Operators
     protected val oauth1CollectionService: OAuth1DataCollectionService
     protected val oauth1Operator: OAuth1Operator
@@ -42,23 +41,25 @@ abstract class OAuth1Test : CoreTest()  {
         garminAccessParams = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_access_params.json"))
 
         // Initialize Operators
-        oauth1Operator = OAuth1Operator(
-            stateService = authorizationStateService,
-            accessParamsService = accessParamService,
-            garminAccessParams = garminAccessParams,
-            garminStressData = garminStressData
-        )
-        oauth1CollectionService = OAuth1DataCollectionService(
-            spyingEventBus,
-            spyingPublisher,
-            transformerRegistry,
-            OAuth1DataCollectionOperatorBuilder(
+        oauth1Operator =
+            OAuth1Operator(
                 stateService = authorizationStateService,
                 accessParamsService = accessParamService,
                 garminAccessParams = garminAccessParams,
-                garminStressData = garminStressData
+                garminStressData = garminStressData,
             )
-        )
+        oauth1CollectionService =
+            OAuth1DataCollectionService(
+                spyingEventBus,
+                spyingPublisher,
+                transformerRegistry,
+                OAuth1DataCollectionOperatorBuilder(
+                    stateService = authorizationStateService,
+                    accessParamsService = accessParamService,
+                    garminAccessParams = garminAccessParams,
+                    garminStressData = garminStressData,
+                ),
+            )
 
         // Initialize OAuth1 Data Sources
         // Garmin
@@ -71,15 +72,15 @@ abstract class OAuth1Test : CoreTest()  {
                 TestProperties.GARMIN_REQUEST_TOKEN_URI,
                 TestProperties.GARMIN_ACCESS_TOKEN_URI,
                 TestProperties.GARMIN_AUTHORIZATION_URI,
-                TestProperties.GARMIN_DATA_URI
+                TestProperties.GARMIN_DATA_URI,
             )
-        garminDataSource = GarminDataSource(
-            spyingEventBus,
-            authorizationStateService,
-            accessParamService,
-            garminClientSettings,
-            oauth1Operator
-        )
+        garminDataSource =
+            GarminDataSource(
+                spyingEventBus,
+                authorizationStateService,
+                accessParamService,
+                garminClientSettings,
+                oauth1Operator,
+            )
     }
-
 }

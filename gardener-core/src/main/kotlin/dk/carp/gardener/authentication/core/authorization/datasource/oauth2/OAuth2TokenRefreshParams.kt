@@ -7,5 +7,5 @@ import dk.carp.gardener.authentication.core.common.util.collections.RestrictedMa
  * for the OAuth2 token refresh processes.
  */
 data class OAuth2TokenRefreshParams(
-    val additionalParams: RestrictedMap<String, String> = RestrictedMap()
+    val additionalParams: RestrictedMap<String, String> = RestrictedMap(),
 )

@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.core.authorization.devices.garmin
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth1.IOAuth1AuthorizationOperator
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth1.OAuth1ClientSettings
@@ -12,7 +13,6 @@ import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import dk.carp.gardener.authentication.core.common.util.uri.HttpMethod
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import com.fasterxml.jackson.databind.JsonNode
 
 /**
  * Implementation of Garmin data source.
@@ -22,9 +22,8 @@ class GarminDataSource(
     stateService: IAuthorizationStateService,
     accessParamsService: IAccessParamsService,
     garminClientSettings: OAuth1ClientSettings,
-    oauth1AuthorizationOperator: IOAuth1AuthorizationOperator
+    oauth1AuthorizationOperator: IOAuth1AuthorizationOperator,
 ) : OAuth1DataSource(eventBus, stateService, accessParamsService, garminClientSettings, oauth1AuthorizationOperator) {
-
     companion object {
         const val DATA_SOURCE_ID = "garmin"
 
@@ -36,9 +35,7 @@ class GarminDataSource(
     /**
      * Returns the ID of the data source.
      */
-    override fun getId(): String {
-        return DATA_SOURCE_ID
-    }
+    override fun getId(): String = DATA_SOURCE_ID
 
     /**
      * Creates a completed [Uri], which can be used to collect the [dataType].
@@ -51,10 +48,8 @@ class GarminDataSource(
     override fun assembleDataCollectionUri(
         accessParams: AccessParams,
         dataType: DataCollectionType,
-        rawPing: JsonNode
-    ): Uri {
-        return Uri(HttpMethod.GET, rawPing.get(AP_API_URI).textValue())
-    }
+        rawPing: JsonNode,
+    ): Uri = Uri(HttpMethod.GET, rawPing.get(AP_API_URI).textValue())
 
     /**
      * Converts a raw notification from the third-party vendor to the
@@ -77,15 +72,18 @@ class GarminDataSource(
                 element.forEach { node ->
                     val apiUri = node.get(AP_API_URI).textValue()
                     val userToken = node.get(AP_USER_TOKEN).textValue()
-                    val dataType = GarminDataCollectionType.from(apiUri.substringBefore("?")) ?:
-                        throw IllegalArgumentException("The requested Garmin Data Type is not valid!")
+                    val dataType =
+                        GarminDataCollectionType.from(apiUri.substringBefore("?"))
+                            ?: throw IllegalArgumentException("The requested Garmin Data Type is not valid!")
 
-                    events.add(DataCollectionPreparationEvent(
-                        dataSourceId = DATA_SOURCE_ID,
-                        userId = userToken,
-                        dataType = dataType,
-                        rawPing =  node
-                    ))
+                    events.add(
+                        DataCollectionPreparationEvent(
+                            dataSourceId = DATA_SOURCE_ID,
+                            userId = userToken,
+                            dataType = dataType,
+                            rawPing = node,
+                        ),
+                    )
                 }
             }
         } catch (ex: Exception) {
@@ -94,5 +92,4 @@ class GarminDataSource(
 
         return events
     }
-
 }

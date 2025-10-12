@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.base
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.TestUtil.Companion.getResourceAsText
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
 import dk.carp.gardener.authentication.core.authorization.devices.dexcom.DexcomDataSource
@@ -12,7 +13,6 @@ import dk.carp.gardener.authentication.core.infrastructure.transformer.fitbit.Fi
 import dk.carp.gardener.authentication.core.infrastructure.transformer.withings.WithingsEmptyTransformerI
 import dk.carp.gardener.authentication.mock.OAuth2DataCollectionOperatorBuilder
 import dk.carp.gardener.authentication.mock.OAuth2Operator
-import com.fasterxml.jackson.databind.JsonNode
 import org.mockito.Mockito
 
 /**
@@ -20,7 +20,6 @@ import org.mockito.Mockito
  * use OAuth2 authorization.
  */
 abstract class OAuth2Test : CoreTest() {
-
     // OAuth2 Operators
     protected val oauth2CollectionService: OAuth2DataCollectionService
     protected val oauth2Operator: OAuth2Operator
@@ -66,23 +65,9 @@ abstract class OAuth2Test : CoreTest() {
         dexcomEgvsData = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_egvs_data.json"))
         dexcomAccessParams = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_access_params.json"))
 
-
         // Initialize Operators
-        oauth2Operator = OAuth2Operator(
-            stateService = authorizationStateService,
-            accessParamsService = accessParamService,
-            fitbitAccessParams = fitbitAccessParams,
-            fitbitActivitiesData = fitbitActivitiesData,
-            withingsAccessParams = withingsAccessParams,
-            withingsActivitiesData = withingsActivitiesData,
-            dexcomAccessParams = dexcomAccessParams,
-            dexcomEgvsData = dexcomEgvsData
-        )
-        oauth2CollectionService = OAuth2DataCollectionService(
-            spyingEventBus,
-            spyingPublisher,
-            transformerRegistry,
-            OAuth2DataCollectionOperatorBuilder(
+        oauth2Operator =
+            OAuth2Operator(
                 stateService = authorizationStateService,
                 accessParamsService = accessParamService,
                 fitbitAccessParams = fitbitAccessParams,
@@ -90,9 +75,24 @@ abstract class OAuth2Test : CoreTest() {
                 withingsAccessParams = withingsAccessParams,
                 withingsActivitiesData = withingsActivitiesData,
                 dexcomAccessParams = dexcomAccessParams,
-                dexcomEgvsData = dexcomEgvsData
+                dexcomEgvsData = dexcomEgvsData,
             )
-        )
+        oauth2CollectionService =
+            OAuth2DataCollectionService(
+                spyingEventBus,
+                spyingPublisher,
+                transformerRegistry,
+                OAuth2DataCollectionOperatorBuilder(
+                    stateService = authorizationStateService,
+                    accessParamsService = accessParamService,
+                    fitbitAccessParams = fitbitAccessParams,
+                    fitbitActivitiesData = fitbitActivitiesData,
+                    withingsAccessParams = withingsAccessParams,
+                    withingsActivitiesData = withingsActivitiesData,
+                    dexcomAccessParams = dexcomAccessParams,
+                    dexcomEgvsData = dexcomEgvsData,
+                ),
+            )
 
         // Initialize OAuth1 Data Sources
         // Fitbit
@@ -103,15 +103,16 @@ abstract class OAuth2Test : CoreTest() {
                 TestProperties.FITBIT_AUTHORIZATION_URI,
                 TestProperties.FITBIT_TOKEN_URI,
                 TestProperties.FITBIT_DATA_URI,
-                "callback"
+                "callback",
             )
-        fitbitDataSource = FitbitDataSource(
-            spyingEventBus,
-            authorizationStateService,
-            accessParamService,
-            fitbitClientSettings,
-            oauth2Operator
-        )
+        fitbitDataSource =
+            FitbitDataSource(
+                spyingEventBus,
+                authorizationStateService,
+                accessParamService,
+                fitbitClientSettings,
+                oauth2Operator,
+            )
         // Withings
         withingsClientSettings =
             OAuth2ClientSettings(
@@ -120,15 +121,16 @@ abstract class OAuth2Test : CoreTest() {
                 TestProperties.WITHINGS_AUTHORIZATION_URI,
                 TestProperties.WITHINGS_TOKEN_URI,
                 TestProperties.WITHINGS_DATA_URI,
-                "callback"
+                "callback",
             )
-        withingsDataSource = WithingsDataSource(
-            spyingEventBus,
-            authorizationStateService,
-            accessParamService,
-            withingsClientSettings,
-            oauth2Operator
-        )
+        withingsDataSource =
+            WithingsDataSource(
+                spyingEventBus,
+                authorizationStateService,
+                accessParamService,
+                withingsClientSettings,
+                oauth2Operator,
+            )
         // Dexcom
         dexcomClientSettings =
             OAuth2ClientSettings(
@@ -137,14 +139,15 @@ abstract class OAuth2Test : CoreTest() {
                 TestProperties.DEXCOM_AUTHORIZATION_URI,
                 TestProperties.DEXCOM_TOKEN_URI,
                 TestProperties.DEXCOM_DATA_URI,
-                "callback"
+                "callback",
             )
-        dexcomDataSource = DexcomDataSource(
-            spyingEventBus,
-            authorizationStateService,
-            accessParamService,
-            dexcomClientSettings,
-            oauth2Operator
-        )
+        dexcomDataSource =
+            DexcomDataSource(
+                spyingEventBus,
+                authorizationStateService,
+                accessParamService,
+                dexcomClientSettings,
+                oauth2Operator,
+            )
     }
 }

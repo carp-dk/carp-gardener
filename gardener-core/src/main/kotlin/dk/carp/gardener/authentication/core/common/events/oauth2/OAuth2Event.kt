@@ -9,14 +9,16 @@ import dk.carp.gardener.authentication.core.common.events.eventbus.DataSourceEve
  * OAuth1 authorization flow specific [DataSourceEvent] definitions.
  */
 sealed class OAuth2Event : DataSourceEvent() {
-
     /**
      * Fired when a user started an OAuth1 authorization process.
      *
      * @param stateId ID the the [AuthorizationState] that is associated with this authorization session.
      * @param dataSourceId ID of the data source.
      */
-    data class UserEnrollmentRequested(val stateId: String, override val dataSourceId: String): OAuth2Event()
+    data class UserEnrollmentRequested(
+        val stateId: String,
+        override val dataSourceId: String,
+    ) : OAuth2Event()
 
     /**
      * Fired when the application received an OAuth2 Authorization Code.
@@ -26,7 +28,12 @@ sealed class OAuth2Event : DataSourceEvent() {
      * @param stateId ID the the [AuthorizationState] that is associated with this authorization session.
      * @param dataSourceId ID of the data source.
      */
-    data class AuthorizationCodeAcquired(val code: String, val params: OAuth2AuthorizationRequestParams, val stateId: String, override val dataSourceId: String): OAuth2Event()
+    data class AuthorizationCodeAcquired(
+        val code: String,
+        val params: OAuth2AuthorizationRequestParams,
+        val stateId: String,
+        override val dataSourceId: String,
+    ) : OAuth2Event()
 
     /**
      * Fired when the application received an OAuth2 Access token.
@@ -35,7 +42,11 @@ sealed class OAuth2Event : DataSourceEvent() {
      * @param stateId ID the the [AuthorizationState] that is associated with this authorization session.
      * @param dataSourceId ID of the data source.
      */
-    data class AccessTokenAcquired(val parameters: OAuth2AccessParams, val stateId: String, override val dataSourceId: String): OAuth2Event()
+    data class AccessTokenAcquired(
+        val parameters: OAuth2AccessParams,
+        val stateId: String,
+        override val dataSourceId: String,
+    ) : OAuth2Event()
 
     /**
      * Fired when the application received an OAuth2 Access token response
@@ -45,5 +56,9 @@ sealed class OAuth2Event : DataSourceEvent() {
      * @param dataSourceId ID of the data source.
      * @param userId The ID of the user the parameters belong to.
      */
-    data class AccessParametersRefreshed(val userId: String, override val dataSourceId: String, val parameters: OAuth2AccessParams): OAuth2Event()
+    data class AccessParametersRefreshed(
+        val userId: String,
+        override val dataSourceId: String,
+        val parameters: OAuth2AccessParams,
+    ) : OAuth2Event()
 }

@@ -16,20 +16,29 @@ import dk.carp.gardener.authentication.core.common.events.datacollection.DataSuc
 import dk.carp.gardener.authentication.core.common.events.eventbus.IntegrationEvent
 import dk.carp.gardener.authentication.core.common.events.oauth2.OAuth2Event
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
-import org.mockito.kotlin.*
-import kotlin.test.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeast
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Integration tests for [WithingsDataSource].
  */
 class WithingsTest : OAuth2Test() {
+    private val withingsActivitiesPing: String =
+        getResourceAsText("/withings/withings_activities_ping.txt")
+    private val withingsExpiredAccessParams: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/withings/withings_expired_access_params.json"))
+    private val withingsInvalidPing: String =
+        getResourceAsText("/withings/withings_invalid_ping.txt")
 
-    private val withingsActivitiesPing: String
-            = getResourceAsText("/withings/withings_activities_ping.txt")
-    private val withingsExpiredAccessParams: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/withings/withings_expired_access_params.json"))
-    private val withingsInvalidPing: String
-            = getResourceAsText("/withings/withings_invalid_ping.txt")
     @Test
     fun returnsTheCorrectId() {
         val id = withingsDataSource.getId()
@@ -121,13 +130,17 @@ class WithingsTest : OAuth2Test() {
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidPing() {
         val notificationText = "fail"
-        assertFailsWith<IllegalArgumentException> { fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            fitbitDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidDataType() {
         val notificationText = withingsInvalidPing
-        assertFailsWith<IllegalArgumentException> { withingsDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            withingsDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
@@ -139,12 +152,15 @@ class WithingsTest : OAuth2Test() {
         // Save a state for the authorization
         val request = withingsDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -164,12 +180,15 @@ class WithingsTest : OAuth2Test() {
         // Save a state for the authorization
         val request = withingsDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -202,12 +221,13 @@ class WithingsTest : OAuth2Test() {
     @Test
     fun accessParamsGetRefreshedWhenExpired() {
         // Save expired user access params
-        val params =  OAuth2AccessParams(
-            internalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID,
-            dataSourceId = WithingsDataSource.DATA_SOURCE_ID,
-            params = withingsExpiredAccessParams,
-            externalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID
-        )
+        val params =
+            OAuth2AccessParams(
+                internalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID,
+                dataSourceId = WithingsDataSource.DATA_SOURCE_ID,
+                params = withingsExpiredAccessParams,
+                externalUserId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID,
+            )
         accessParamService.addParams(params)
 
         // Fire preparation events
@@ -320,8 +340,7 @@ class WithingsTest : OAuth2Test() {
             userId,
             dataSourceId,
             "authorization_code",
-            withingsDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams
+            withingsDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams,
         )
     }
-
 }

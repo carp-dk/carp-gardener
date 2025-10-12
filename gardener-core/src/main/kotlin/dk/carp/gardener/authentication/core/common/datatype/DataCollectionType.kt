@@ -8,7 +8,6 @@ import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransfor
  * from the Web APIs.
  */
 interface DataCollectionType {
-
     /**
      * The id of the [DataCollectionType].
      * It is associated with the vendor's data name.
@@ -37,5 +36,8 @@ interface DataCollectionType {
      *
      * @return A transformed third-party data.
      */
-    fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any>
+    fun acceptTransformer(
+        transformer: IDataTypeTransformer,
+        data: ThirdPartyData,
+    ): List<Any>
 }

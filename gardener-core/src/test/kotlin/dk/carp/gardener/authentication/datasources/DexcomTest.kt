@@ -21,19 +21,23 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.times
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Integration tests for [DexcomDataSource].
  */
 class DexcomTest : OAuth2Test() {
-
-    private val dexcomEgvsPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_egvs_ping.json"))
-    private val dexcomExpiredAccessParams: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_expired_access_params.json"))
-    private val dexcomInvalidPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_invalid_ping.json"))
+    private val dexcomEgvsPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_egvs_ping.json"))
+    private val dexcomExpiredAccessParams: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_expired_access_params.json"))
+    private val dexcomInvalidPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/dexcom/dexcom_invalid_ping.json"))
 
     @Test
     fun returnsTheCorrectId() {
@@ -136,13 +140,17 @@ class DexcomTest : OAuth2Test() {
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidPing() {
         val notificationText = "fail"
-        assertFailsWith<IllegalArgumentException> { dexcomDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            dexcomDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidDataType() {
         val notificationText = dexcomInvalidPing.toString()
-        assertFailsWith<IllegalArgumentException> { dexcomDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            dexcomDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
@@ -154,12 +162,15 @@ class DexcomTest : OAuth2Test() {
         // Save a state for the authorization
         val request = dexcomDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -179,12 +190,15 @@ class DexcomTest : OAuth2Test() {
         // Save a state for the authorization
         val request = dexcomDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth2Event.AuthorizationCodeAcquired(
-            code = "code",
-            stateId = request.authorizationState.id,
-            dataSourceId = dataSourceId,
-            params = params
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth2Event.AuthorizationCodeAcquired(
+                code = "code",
+                stateId = request.authorizationState.id,
+                dataSourceId = dataSourceId,
+                params = params,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -217,12 +231,13 @@ class DexcomTest : OAuth2Test() {
     @Test
     fun accessParamsGetRefreshedWhenExpired() {
         // Save expired user access params
-        val params =  OAuth2AccessParams(
-            internalUserId = TestProperties.DEXCOM_PING_USER_ID,
-            dataSourceId = DexcomDataSource.DATA_SOURCE_ID,
-            params = dexcomExpiredAccessParams,
-            externalUserId = TestProperties.DEXCOM_TEST_USER_EXTERNAL_ID
-        )
+        val params =
+            OAuth2AccessParams(
+                internalUserId = TestProperties.DEXCOM_PING_USER_ID,
+                dataSourceId = DexcomDataSource.DATA_SOURCE_ID,
+                params = dexcomExpiredAccessParams,
+                externalUserId = TestProperties.DEXCOM_TEST_USER_EXTERNAL_ID,
+            )
         accessParamService.addParams(params)
 
         // Fire preparation events
@@ -335,8 +350,7 @@ class DexcomTest : OAuth2Test() {
             userId,
             dataSourceId,
             "authorization_code",
-            dexcomDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams
+            dexcomDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams,
         )
     }
-
 }

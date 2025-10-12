@@ -4,7 +4,6 @@ package dk.carp.gardener.authentication.core.common.accessparams
  * Repository to manage [AccessParams] instances.
  */
 interface IAccessParamsRepository {
-
     /**
      * Stores a newly created [AccessParams] or
      * updates it, if it is already present (by its ID).
@@ -22,7 +21,10 @@ interface IAccessParamsRepository {
      *
      * @return [AccessParams] or null if there is no [AccessParams] for the user/data source.
      */
-    fun getLatestByInternalOrExternalUserIdAndDataSourceId(userId: String, dataSourceId: String): AccessParams?
+    fun getLatestByInternalOrExternalUserIdAndDataSourceId(
+        userId: String,
+        dataSourceId: String,
+    ): AccessParams?
 
     /**
      * Checks whether an [AccessParams] entry is present.
@@ -32,6 +34,8 @@ interface IAccessParamsRepository {
      *
      * @return True if it is present, false otherwise.
      */
-    fun existsByInternalOrExternalUserIdAndDataSourceId(userId: String, dataSourceId: String): Boolean
-
+    fun existsByInternalOrExternalUserIdAndDataSourceId(
+        userId: String,
+        dataSourceId: String,
+    ): Boolean
 }

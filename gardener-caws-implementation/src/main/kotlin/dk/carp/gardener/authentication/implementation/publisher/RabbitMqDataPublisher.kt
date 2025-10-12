@@ -13,8 +13,9 @@ import java.io.IOException
 /**
  * Provides a RabbitMQ implementation for [IDataPublisher].
  */
-class RabbitMqDataPublisher(private val properties: PropertiesConfig) : IDataPublisher {
-
+class RabbitMqDataPublisher(
+    private val properties: PropertiesConfig,
+) : IDataPublisher {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(RabbitMqDataPublisher::class.java)
     }
@@ -23,16 +24,17 @@ class RabbitMqDataPublisher(private val properties: PropertiesConfig) : IDataPub
     private val connection: Connection
 
     init {
-        val factory = ConnectionFactory().apply {
-            host = properties.getProperty("rabbitmq.host")
-            port = properties.getProperty("rabbitmq.port").toInt()
-            username = properties.getProperty("rabbitmq.username")
-            password = properties.getProperty("rabbitmq.password")
-            connectionTimeout = 60000
-            requestedHeartbeat = 60
-            handshakeTimeout = 60000
-            networkRecoveryInterval = 5000
-        }
+        val factory =
+            ConnectionFactory().apply {
+                host = properties.getProperty("rabbitmq.host")
+                port = properties.getProperty("rabbitmq.port").toInt()
+                username = properties.getProperty("rabbitmq.username")
+                password = properties.getProperty("rabbitmq.password")
+                connectionTimeout = 60000
+                requestedHeartbeat = 60
+                handshakeTimeout = 60000
+                networkRecoveryInterval = 5000
+            }
 
         LOGGER.info("RabbitMQ connection establishment starting for ${factory.host}:${factory.port}")
         connection = factory.newConnection()
@@ -50,12 +52,11 @@ class RabbitMqDataPublisher(private val properties: PropertiesConfig) : IDataPub
                 properties.getProperty("rabbitmq.exchange.name"),
                 properties.getProperty("rabbitmq.queue.name"),
                 null,
-                serializedData.toByteArray()
+                serializedData.toByteArray(),
             )
             LOGGER.info("New datapoint successfully published to ${properties.getProperty("rabbitmq.queue.name")}.")
-        } catch(ex: IOException) {
+        } catch (ex: IOException) {
             LOGGER.info("Exception thrown while trying to publish data into RabbitMQ stream: $ex")
         }
     }
-
 }

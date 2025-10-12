@@ -22,16 +22,18 @@ import org.slf4j.LoggerFactory
 /**
  * Provides an implementation for [IOAuth1AuthorizationOperator] and [IDataCollectionOperator].
  */
-class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1AuthorizationOperator,
+class OAuth1Operator(
+    private val clientSettings: OAuth1ClientSettings,
+) : IOAuth1AuthorizationOperator,
     IDataCollectionOperator {
-
     companion object {
         private val LOGGER = LoggerFactory.getLogger(OAuth1Operator::class.java)
     }
 
-    private val service: OAuth10aService = ServiceBuilder(clientSettings.consumerKey)
-        .apiSecret(clientSettings.consumerSecret)
-        .build(OAuth1ApiDefinition(clientSettings.requestTokenUri, clientSettings.accessTokenUri, clientSettings.authorizationUri))
+    private val service: OAuth10aService =
+        ServiceBuilder(clientSettings.consumerKey)
+            .apiSecret(clientSettings.consumerSecret)
+            .build(OAuth1ApiDefinition(clientSettings.requestTokenUri, clientSettings.accessTokenUri, clientSettings.authorizationUri))
 
     /**
      * Returns a completed authorization URI string that can be used to redirect the user
@@ -49,14 +51,15 @@ class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1
     override fun getCompleteAuthorizationUrlForUser(
         stateId: String,
         requestToken: OAuth1RequestToken,
-        params: OAuth1AuthorizationRequestParams
+        params: OAuth1AuthorizationRequestParams,
     ): String {
-        val baseUri = service.getAuthorizationUrl(
-            com.github.scribejava.core.model.OAuth1RequestToken(
-                requestToken.requestToken,
-                requestToken.tokenSecret
+        val baseUri =
+            service.getAuthorizationUrl(
+                com.github.scribejava.core.model.OAuth1RequestToken(
+                    requestToken.requestToken,
+                    requestToken.tokenSecret,
+                ),
             )
-        )
         return if (clientSettings.clientCallbackUri == null) {
             baseUri
         } else {
@@ -84,7 +87,7 @@ class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1
         LOGGER.info("OAuth1 Unsigned Token successfully received from third-party API.")
         return OAuth1RequestToken(
             token.token,
-            token.tokenSecret
+            token.tokenSecret,
         )
     }
 
@@ -106,16 +109,19 @@ class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1
         dataSourceId: String,
         requestToken: OAuth1RequestToken,
         verifier: String,
-        params: OAuth1AuthorizationRequestParams
+        params: OAuth1AuthorizationRequestParams,
     ): OAuth1AccessParams {
         val rawResponse: String
         try {
-            rawResponse = service.getAccessToken(
-                com.github.scribejava.core.model.OAuth1RequestToken(requestToken.requestToken, requestToken.tokenSecret),
-                verifier
-            ).rawResponse
+            rawResponse =
+                service
+                    .getAccessToken(
+                        com.github.scribejava.core.model
+                            .OAuth1RequestToken(requestToken.requestToken, requestToken.tokenSecret),
+                        verifier,
+                    ).rawResponse
         } catch (ex: Exception) {
-            throw IllegalStateException("Failed OAUth1 Access Token request for ${dataSourceId}/${userId}: ${ex.message}")
+            throw IllegalStateException("Failed OAUth1 Access Token request for $dataSourceId/$userId: ${ex.message}")
         }
 
         LOGGER.info("OAuth1 Access token is successfully retrieved from third-party API for $dataSourceId/$userId.")
@@ -132,30 +138,45 @@ class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1
      *
      * @throws IllegalStateException When the data collection failed.
      */
-    override fun executeRequest(uri: Uri, dataType: DataCollectionType, accessParams: AccessParams, callback: (String) -> Unit) {
+    override fun executeRequest(
+        uri: Uri,
+        dataType: DataCollectionType,
+        accessParams: AccessParams,
+        callback: (String) -> Unit,
+    ) {
         accessParams as OAuth1AccessParams
         val request = OAuthRequest(Verb.GET, uri.uri)
         service.signRequest(
             OAuth1AccessToken(accessParams.extractAccessToken(), accessParams.extractTokenSecret()),
-            request
+            request,
         )
 
         val response: Response
         try {
             response = service.execute(request)
         } catch (ex: Exception) {
-            throw IllegalStateException("Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}")
+            throw IllegalStateException(
+                "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
+            )
         }
         if (response.code < 200 || response.code >= 300) {
-            throw IllegalStateException("Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${response.body}")
+            throw IllegalStateException(
+                "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${response.body}",
+            )
         }
 
-        LOGGER.info("OAuth1 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.")
+        LOGGER.info(
+            "OAuth1 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.",
+        )
         callback(response.body)
     }
 
-    private fun extractParams(userId: String, dataSourceId: String, rawResponse: String): OAuth1AccessParams {
-        return when (dataSourceId) {
+    private fun extractParams(
+        userId: String,
+        dataSourceId: String,
+        rawResponse: String,
+    ): OAuth1AccessParams =
+        when (dataSourceId) {
             GarminDataSource.DATA_SOURCE_ID -> {
                 GarminAccessTokenResponseExtractor.getAccessParamsFromResponse(userId, dataSourceId, rawResponse)
             }
@@ -163,10 +184,10 @@ class OAuth1Operator(private val clientSettings: OAuth1ClientSettings) : IOAuth1
                 throw IllegalArgumentException("DataSourceId $dataSourceId is not valid.")
             }
         }
-    }
 
-    private fun appendCallback(authorizationUri: String, callbackUri: String, stateId: String): String {
-        return "$authorizationUri&oauth_callback=$callbackUri?state=$stateId"
-    }
-
+    private fun appendCallback(
+        authorizationUri: String,
+        callbackUri: String,
+        stateId: String,
+    ): String = "$authorizationUri&oauth_callback=$callbackUri?state=$stateId"
 }

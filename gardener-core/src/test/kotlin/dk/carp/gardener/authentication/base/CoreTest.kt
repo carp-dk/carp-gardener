@@ -1,5 +1,10 @@
 package dk.carp.gardener.authentication.base
 
+import dk.carp.gardener.authentication.core.authorization.authorizationstate.AuthorizationStateServiceHost
+import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateRepository
+import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
+import dk.carp.gardener.authentication.core.authorization.datasourceregistry.DataSourceRegistryHost
+import dk.carp.gardener.authentication.core.authorization.datasourceregistry.IDataSourceRegistry
 import dk.carp.gardener.authentication.core.collection.publisher.IDataPublisher
 import dk.carp.gardener.authentication.core.common.accessparams.AccessParamsServiceHost
 import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsRepository
@@ -19,18 +24,18 @@ import kotlin.test.BeforeTest
  * Sets up the application services.
  */
 abstract class CoreTest {
-
     protected val cleanEventBus: IEventBus = SingleThreadedEventBus()
     protected var spyingEventBus: IEventBus = spy(cleanEventBus)
-    protected var authorizationStateRepository: dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateRepository = InMemoryAuthorizationStateRepository()
-    protected val authorizationStateService: dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService =
-        dk.carp.gardener.authentication.core.authorization.authorizationstate.AuthorizationStateServiceHost(
-            authorizationStateRepository
+    protected var authorizationStateRepository:
+        IAuthorizationStateRepository = InMemoryAuthorizationStateRepository()
+    protected val authorizationStateService:
+        IAuthorizationStateService =
+        AuthorizationStateServiceHost(
+            authorizationStateRepository,
         )
     protected var accessParamsRepository: IAccessParamsRepository = InMemoryAccessParamsRepository()
-    protected val accessParamService : IAccessParamsService = AccessParamsServiceHost(accessParamsRepository)
-    protected var dataSourceRegistry: dk.carp.gardener.authentication.core.authorization.datasourceregistry.IDataSourceRegistry =
-        dk.carp.gardener.authentication.core.authorization.datasourceregistry.DataSourceRegistryHost(spyingEventBus)
+    protected val accessParamService: IAccessParamsService = AccessParamsServiceHost(accessParamsRepository)
+    protected var dataSourceRegistry: IDataSourceRegistry = DataSourceRegistryHost(spyingEventBus)
     protected val transformerRegistry: IDataTypeTransformerRegistry = DataTypeTransformerRegistryHost()
     protected val cleanPublisher: IDataPublisher = InMemoryDataPublisher()
     protected val spyingPublisher: IDataPublisher = spy(cleanPublisher)
@@ -43,7 +48,7 @@ abstract class CoreTest {
         authorizationStateRepository = InMemoryAuthorizationStateRepository()
         accessParamsRepository = InMemoryAccessParamsRepository()
         dataSourceRegistry =
-            dk.carp.gardener.authentication.core.authorization.datasourceregistry.DataSourceRegistryHost(spyingEventBus)
+            dk.carp.gardener.authentication.core.authorization.datasourceregistry
+                .DataSourceRegistryHost(spyingEventBus)
     }
-
 }

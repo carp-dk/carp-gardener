@@ -8,10 +8,11 @@ import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransfor
  * Defines the data transformation functions for each supported [DataCollectionType].
  */
 interface DexcomDataTypeTransformer : IDataTypeTransformer {
-
     fun transformCalibrations(data: ThirdPartyData): List<Any>
-    fun transformDataRange(data: ThirdPartyData): List<Any>
-    fun transformEgvs(data: ThirdPartyData): List<Any>
-    fun transformStatistics(data: ThirdPartyData): List<Any>
 
+    fun transformDataRange(data: ThirdPartyData): List<Any>
+
+    fun transformEgvs(data: ThirdPartyData): List<Any>
+
+    fun transformStatistics(data: ThirdPartyData): List<Any>
 }

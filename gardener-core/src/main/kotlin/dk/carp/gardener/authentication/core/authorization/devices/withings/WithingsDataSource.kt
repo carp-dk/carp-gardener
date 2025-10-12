@@ -1,21 +1,24 @@
 package dk.carp.gardener.authentication.core.authorization.devices.withings
 
-import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
-import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsService
-import dk.carp.gardener.authentication.core.authorization.authorizationrequest.AuthorizationRequestParams
-import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
-import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
-import dk.carp.gardener.authentication.core.common.util.uri.HttpMethod
-import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.*
-import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
-import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionPreparationEvent
-import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
-import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
-import dk.carp.gardener.authentication.core.common.util.collections.RestrictedMap
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import dk.carp.gardener.authentication.core.authorization.authorizationrequest.AuthorizationRequestParams
+import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
+import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.IOAuth2AuthorizationOperator
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2DataSource
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams
+import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
+import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
+import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsService
+import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
+import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionPreparationEvent
+import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
+import dk.carp.gardener.authentication.core.common.util.collections.RestrictedMap
+import dk.carp.gardener.authentication.core.common.util.uri.HttpMethod
+import dk.carp.gardener.authentication.core.common.util.uri.Uri
 
 /**
  * Implementation of Withings data source.
@@ -25,9 +28,8 @@ class WithingsDataSource(
     stateService: IAuthorizationStateService,
     accessParamsService: IAccessParamsService,
     fitbitClientSettings: OAuth2ClientSettings,
-    oauth2AuthorizationOperator: IOAuth2AuthorizationOperator
+    oauth2AuthorizationOperator: IOAuth2AuthorizationOperator,
 ) : OAuth2DataSource(eventBus, stateService, accessParamsService, fitbitClientSettings, oauth2AuthorizationOperator) {
-
     companion object {
         const val DATA_SOURCE_ID = "withings"
 
@@ -46,23 +48,22 @@ class WithingsDataSource(
     /**
      * Supported Withings scopes.
      */
-    enum class Scopes(val key: String) {
+    enum class Scopes(
+        val key: String,
+    ) {
         USER_ACTIVITY("user.activity"),
-        USER_METRICS("user.metrics");
+        USER_METRICS("user.metrics"),
+        ;
 
         companion object {
-            fun isValid(scope: String): Boolean {
-                return  entries.firstOrNull { it.key == scope } != null
-            }
+            fun isValid(scope: String): Boolean = entries.firstOrNull { it.key == scope } != null
         }
     }
 
     /**
      * Returns the ID of the data source.
      */
-    override fun getId(): String {
-        return DATA_SOURCE_ID
-    }
+    override fun getId(): String = DATA_SOURCE_ID
 
     /**
      * Returns an [AuthorizationRequestParams] object that already contains
@@ -71,7 +72,7 @@ class WithingsDataSource(
     override fun getEstablishedAuthorizationRequestParams(): AuthorizationRequestParams {
         val additionalParams: MutableMap<String, String> = mutableMapOf("action" to "requesttoken")
         return OAuth2AuthorizationRequestParams(
-            additionalParamsForTokens = RestrictedMap(additionalParams)
+            additionalParamsForTokens = RestrictedMap(additionalParams),
         )
     }
 
@@ -82,7 +83,7 @@ class WithingsDataSource(
     override fun getEstablishedTokenRefreshParams(): OAuth2TokenRefreshParams {
         val additionalParams: MutableMap<String, String> = mutableMapOf("action" to "requesttoken")
         return OAuth2TokenRefreshParams(
-            RestrictedMap(additionalParams)
+            RestrictedMap(additionalParams),
         )
     }
 
@@ -95,13 +96,16 @@ class WithingsDataSource(
     override fun constructScopeStringsForAuthorizationUrl(scopes: List<String>?): String {
         if (scopes != null) {
             scopes.forEach {
-                if (!Scopes.isValid(it)) {
-                    throw IllegalArgumentException("The requested Withings scope $it is not valid!")
+                require(Scopes.isValid(it)) {
+                    IllegalArgumentException("The requested Withings scope $it is not valid!")
                 }
             }
             return scopes.joinToString(",")
         }
-        return FitbitDataSource.Scopes.entries.map { it.key }.toList().joinToString(",")
+        return FitbitDataSource.Scopes.entries
+            .map { it.key }
+            .toList()
+            .joinToString(",")
     }
 
     /**
@@ -115,7 +119,7 @@ class WithingsDataSource(
     override fun assembleDataCollectionUri(
         accessParams: AccessParams,
         dataType: DataCollectionType,
-        rawPing: JsonNode
+        rawPing: JsonNode,
     ): Uri {
         dataType as WithingsDataCollectionType
         val uriString: String
@@ -172,19 +176,20 @@ class WithingsDataSource(
         val event: DataCollectionPreparationEvent
         try {
             val userId = node.get("userid").textValue()
-            val dataType = WithingsDataCollectionType.from(node.get("appli").textValue()) ?:
-                throw IllegalArgumentException("The requested Withings Data Type is not valid!")
-            event = DataCollectionPreparationEvent(
-                dataSourceId = DATA_SOURCE_ID,
-                userId = userId,
-                dataType = dataType,
-                rawPing = node
-            )
+            val dataType =
+                WithingsDataCollectionType.from(node.get("appli").textValue())
+                    ?: throw IllegalArgumentException("The requested Withings Data Type is not valid!")
+            event =
+                DataCollectionPreparationEvent(
+                    dataSourceId = DATA_SOURCE_ID,
+                    userId = userId,
+                    dataType = dataType,
+                    rawPing = node,
+                )
         } catch (ex: Exception) {
             throw IllegalArgumentException("Notification extraction failed for Withings: ${ex.message}. \nSent notification: $node")
         }
 
         return listOf(event)
     }
-
 }

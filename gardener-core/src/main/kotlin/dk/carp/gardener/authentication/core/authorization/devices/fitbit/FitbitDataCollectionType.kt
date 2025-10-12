@@ -14,14 +14,16 @@ enum class FitbitDataCollectionType(
     private val ns: String,
     val version: String = "1",
 ) : DataCollectionType {
-
     ACTIVITIES(
         "activities",
         "activities",
         "Fitbit Activity Summary",
-        "com.fitbit.activities"
+        "com.fitbit.activities",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as FitbitDataTypeTransformer
             return transformer.transformActivities(data)
         }
@@ -30,9 +32,12 @@ enum class FitbitDataCollectionType(
         "activities",
         "activities/heart",
         "Fitbit Heart rate",
-        "com.fitbit.heart_rate"
+        "com.fitbit.heart_rate",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as FitbitDataTypeTransformer
             return transformer.transformHeartRate(data)
         }
@@ -41,9 +46,12 @@ enum class FitbitDataCollectionType(
         "body",
         "body/log/weight",
         "Fitbit Body Weight",
-        "com.fitbit.body"
+        "com.fitbit.body",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as FitbitDataTypeTransformer
             return transformer.transformBody(data)
         }
@@ -53,8 +61,12 @@ enum class FitbitDataCollectionType(
         "sleep",
         "Fitbit Sleep logs",
         "com.fitbit.sleep",
-        "1.2") {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        "1.2",
+    ) {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as FitbitDataTypeTransformer
             return transformer.transformSleep(data)
         }
@@ -63,20 +75,26 @@ enum class FitbitDataCollectionType(
         "foods",
         "foods/log",
         "Fitbit Food logs",
-        "com.fitbit.food"
+        "com.fitbit.food",
     ) {
-        override fun acceptTransformer(transformer: IDataTypeTransformer, data: ThirdPartyData): List<Any> {
+        override fun acceptTransformer(
+            transformer: IDataTypeTransformer,
+            data: ThirdPartyData,
+        ): List<Any> {
             transformer as FitbitDataTypeTransformer
             return transformer.transformFood(data)
         }
-    };
+    }, ;
 
     companion object {
         fun from(type: String?): DataCollectionType? = entries.find { it.id == type }
     }
 
     override fun getIdentifier() = id
+
     override fun getEndpoint() = ep
+
     override fun getCustomName() = cn
+
     override fun getNamespace(): String = ns
 }

@@ -1,5 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.testing.logging.TestLogEvent.*
+import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -23,7 +25,7 @@ application {
 
 val mainVerticleName = "com.example.authenticationmodule.verticles.MainVerticle"
 val watchForChange = "src/**/*"
-val doOnChange = "${projectDir}/gradlew classes"
+val doOnChange = "$projectDir/gradlew classes"
 
 dependencies {
     // Gardener Core
@@ -74,11 +76,12 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-    args = listOf(
-        "run",
-        mainVerticleName,
-        "--redeploy=$watchForChange",
-        "--launcher-class=${application.mainClass.get()}",
-        "--on-redeploy=$doOnChange"
-    )
+    args =
+        listOf(
+            "run",
+            mainVerticleName,
+            "--redeploy=$watchForChange",
+            "--launcher-class=${application.mainClass.get()}",
+            "--on-redeploy=$doOnChange",
+        )
 }

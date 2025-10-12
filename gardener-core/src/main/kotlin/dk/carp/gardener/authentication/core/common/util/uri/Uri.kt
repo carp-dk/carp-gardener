@@ -9,5 +9,5 @@ data class Uri(
     val method: HttpMethod,
     val uri: String,
     val queryParams: Map<String, String>? = null,
-    val body: JsonNode? = null
+    val body: JsonNode? = null,
 )

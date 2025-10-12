@@ -10,8 +10,9 @@ import org.slf4j.LoggerFactory
 /**
  * Provides a MongoDB implementation for [IAccessParamsRepository].
  */
-class MongoAccessParamsRepository(private val client: MongoClient) : IAccessParamsRepository {
-
+class MongoAccessParamsRepository(
+    private val client: MongoClient,
+) : IAccessParamsRepository {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(MongoAccessParamsRepository::class.java)
     }
@@ -46,9 +47,10 @@ class MongoAccessParamsRepository(private val client: MongoClient) : IAccessPara
      */
     override fun getLatestByInternalOrExternalUserIdAndDataSourceId(
         userId: String,
-        dataSourceId: String
+        dataSourceId: String,
     ): AccessParams? {
-        val query = "    {\n" +
+        val query =
+            "    {\n" +
                 "        \"\$and\": [\n" +
                 "            {\n" +
                 "                \"\$or\": [\n" +
@@ -75,7 +77,8 @@ class MongoAccessParamsRepository(private val client: MongoClient) : IAccessPara
         }
         LOGGER.info("Access params found for $dataSourceId/$userId.")
 
-        return results.map { it.remove("_id") }
+        return results
+            .map { it.remove("_id") }
             .map { ConfiguredObjectMapper.instance.readValue(results[0].encode(), AccessParams::class.java) }
             .maxByOrNull { it.createdAt }!!
     }
@@ -88,10 +91,11 @@ class MongoAccessParamsRepository(private val client: MongoClient) : IAccessPara
      *
      * @return True if it is present, false otherwise.
      */
-    override fun existsByInternalOrExternalUserIdAndDataSourceId(userId: String, dataSourceId: String): Boolean {
+    override fun existsByInternalOrExternalUserIdAndDataSourceId(
+        userId: String,
+        dataSourceId: String,
+    ): Boolean {
         val result: AccessParams? = getLatestByInternalOrExternalUserIdAndDataSourceId(userId, dataSourceId)
         return result != null
     }
-
-
 }

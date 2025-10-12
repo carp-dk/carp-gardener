@@ -4,7 +4,6 @@ package dk.carp.gardener.authentication.core.authorization.authorizationstate
  * Allows creating and manipulating [AuthorizationState] objects.
  */
 interface IAuthorizationStateService {
-
     /**
      * Retrieves an [AuthorizationState] object by its ID.
      *
@@ -31,5 +30,4 @@ interface IAuthorizationStateService {
      * @param state The [AuthorizationState] object to update.
      */
     fun setSuccessfulState(state: AuthorizationState)
-
 }

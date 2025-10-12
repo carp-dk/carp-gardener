@@ -4,11 +4,11 @@ import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
 import dk.carp.gardener.authentication.core.collection.publisher.IDataPublisher
 import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
-import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import dk.carp.gardener.authentication.core.common.events.datacollection.DataCollectionExecutionEvent
 import dk.carp.gardener.authentication.core.common.events.datacollection.DataSuccessfullyCollectedEvent
 import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
 import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransformerRegistry
+import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 
 /**
  * Super-class that
@@ -17,9 +17,8 @@ import dk.carp.gardener.authentication.core.common.transformer.IDataTypeTransfor
 abstract class DataCollectionService(
     private val eventBus: IEventBus,
     private val publisher: IDataPublisher,
-    private val transformerRegistry: IDataTypeTransformerRegistry
+    private val transformerRegistry: IDataTypeTransformerRegistry,
 ) : IDataCollectionService {
-
     /**
      * Executes a data collection event.
      */
@@ -28,7 +27,9 @@ abstract class DataCollectionService(
             uri = event.uri,
             dataType = event.dataIdentifier,
             accessParams = event.accessParams,
-            callback = { apiResponse: String -> processFetchedData(event.accessParams, event.dataIdentifier, apiResponse) }
+            callback = { apiResponse: String ->
+                processFetchedData(event.accessParams, event.dataIdentifier, apiResponse)
+            },
         )
     }
 
@@ -45,26 +46,33 @@ abstract class DataCollectionService(
      * @param dataType The type of the data that was collected.
      * @param result Raw response from the Web API.
      */
-    private fun processFetchedData(accessParams: AccessParams, dataType: DataCollectionType, result: String) {
+    private fun processFetchedData(
+        accessParams: AccessParams,
+        dataType: DataCollectionType,
+        result: String,
+    ) {
         val resultNode = ConfiguredObjectMapper.instance.readTree(result)
-        val fetchedData = ThirdPartyData(
-            userId = accessParams.internalUserId,
-            dataSourceId = accessParams.dataSourceId,
-            dataIdentifier = dataType,
-            rawResponse = resultNode,
-            applicationData = accessParams.applicationData
-        )
+        val fetchedData =
+            ThirdPartyData(
+                userId = accessParams.internalUserId,
+                dataSourceId = accessParams.dataSourceId,
+                dataIdentifier = dataType,
+                rawResponse = resultNode,
+                applicationData = accessParams.applicationData,
+            )
 
         val transformer = transformerRegistry.getTransformerForDataSource(fetchedData.dataSourceId)
         val transformedData = fetchedData.transform(transformer)
 
         transformedData.forEach { data -> publisher.publishCollectedData(data) }
-        eventBus.publish(this::class, DataSuccessfullyCollectedEvent(
-            dataSourceId = fetchedData.dataSourceId,
-            userId = fetchedData.userId,
-            dataType = fetchedData.dataIdentifier,
-            collectedAt = fetchedData.collectedAt
-        ))
+        eventBus.publish(
+            this::class,
+            DataSuccessfullyCollectedEvent(
+                dataSourceId = fetchedData.dataSourceId,
+                userId = fetchedData.userId,
+                dataType = fetchedData.dataIdentifier,
+                collectedAt = fetchedData.collectedAt,
+            ),
+        )
     }
-
 }

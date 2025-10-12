@@ -1,5 +1,6 @@
 package dk.carp.gardener.authentication.datasources
 
+import com.fasterxml.jackson.databind.JsonNode
 import dk.carp.gardener.authentication.base.OAuth1Test
 import dk.carp.gardener.authentication.base.TestProperties
 import dk.carp.gardener.authentication.base.TestUtil.Companion.getResourceAsText
@@ -16,22 +17,24 @@ import dk.carp.gardener.authentication.core.common.events.datacollection.DataSuc
 import dk.carp.gardener.authentication.core.common.events.eventbus.IntegrationEvent
 import dk.carp.gardener.authentication.core.common.events.oauth1.OAuth1Event
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
-import com.fasterxml.jackson.databind.JsonNode
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 /**
  * Integration tests for [GarminDataSource].
  */
 class GarminTest : OAuth1Test() {
-
-    private val garminStressPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_stress_ping.json"))
-    private val garminInvalidPing: JsonNode
-            = ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_invalid_ping.json"))
+    private val garminStressPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_stress_ping.json"))
+    private val garminInvalidPing: JsonNode =
+        ConfiguredObjectMapper.instance.readTree(getResourceAsText("/garmin/garmin_invalid_ping.json"))
 
     @Test
     fun returnsTheCorrectId() {
@@ -90,8 +93,13 @@ class GarminTest : OAuth1Test() {
         val params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams
 
         // Imitate a previous successful authorization
-        oauth1Operator.acquireAccessToken(userId, dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
+        oauth1Operator.acquireAccessToken(
+            userId,
+            dataSourceId,
+            OAuth1RequestToken("", ""),
+            "",
+            params,
+        )
 
         assertFailsWith<IllegalArgumentException> { garminDataSource.initiateUserAuthorization(userId, dataSourceId, params) }
     }
@@ -102,12 +110,28 @@ class GarminTest : OAuth1Test() {
         val dataSourceId = GarminDataSource.DATA_SOURCE_ID
         val params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams
 
-        val actualAccessParams = oauth1Operator.acquireAccessToken(userId, dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
-        oauth1Operator.acquireAccessToken("dummy1", dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
-        oauth1Operator.acquireAccessToken("dummy1", dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
+        val actualAccessParams =
+            oauth1Operator.acquireAccessToken(
+                userId,
+                dataSourceId,
+                OAuth1RequestToken("", ""),
+                "",
+                params,
+            )
+        oauth1Operator.acquireAccessToken(
+            "dummy1",
+            dataSourceId,
+            OAuth1RequestToken("", ""),
+            "",
+            params,
+        )
+        oauth1Operator.acquireAccessToken(
+            "dummy1",
+            dataSourceId,
+            OAuth1RequestToken("", ""),
+            "",
+            params,
+        )
 
         val accessParams = garminDataSource.getAccessParametersFor(userId)
         assertEquals(actualAccessParams.id, accessParams.id)
@@ -119,10 +143,20 @@ class GarminTest : OAuth1Test() {
         val dataSourceId = GarminDataSource.DATA_SOURCE_ID
         val params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams
 
-        oauth1Operator.acquireAccessToken("dummy1", dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
-        oauth1Operator.acquireAccessToken("dummy1", dataSourceId,
-            OAuth1RequestToken("", ""), "", params)
+        oauth1Operator.acquireAccessToken(
+            "dummy1",
+            dataSourceId,
+            OAuth1RequestToken("", ""),
+            "",
+            params,
+        )
+        oauth1Operator.acquireAccessToken(
+            "dummy1",
+            dataSourceId,
+            OAuth1RequestToken("", ""),
+            "",
+            params,
+        )
 
         assertFailsWith<IllegalArgumentException> { garminDataSource.getAccessParametersFor(userId) }
     }
@@ -140,13 +174,17 @@ class GarminTest : OAuth1Test() {
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidFormat() {
         val notificationText = "fail"
-        assertFailsWith<IllegalArgumentException> { garminDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            garminDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
     fun dataCollectionPreparationEventFailsWithInvalidDataType() {
         val notificationText = garminInvalidPing.toString()
-        assertFailsWith<IllegalArgumentException> { garminDataSource.getDataCollectionPreparationEventFromPing(notificationText) }
+        assertFailsWith<IllegalArgumentException> {
+            garminDataSource.getDataCollectionPreparationEventFromPing(notificationText)
+        }
     }
 
     @Test
@@ -158,13 +196,16 @@ class GarminTest : OAuth1Test() {
         // Save a state for the authorization
         val request = garminDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth1Event.AuthorizedTokenAcquired(
-            stateId = request.authorizationState.id,
-            requestToken = "request_token",
-            tokenVerifier = "token_verifier",
-            params = params,
-            dataSourceId = GarminDataSource.DATA_SOURCE_ID
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth1Event.AuthorizedTokenAcquired(
+                stateId = request.authorizationState.id,
+                requestToken = "request_token",
+                tokenVerifier = "token_verifier",
+                params = params,
+                dataSourceId = GarminDataSource.DATA_SOURCE_ID,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -184,13 +225,16 @@ class GarminTest : OAuth1Test() {
         // Save a state for the authorization
         val request = garminDataSource.initiateUserAuthorization(userId, dataSourceId, params)
         // Publish an authorization code event
-        spyingEventBus.publish(this::class, OAuth1Event.AuthorizedTokenAcquired(
-            stateId = request.authorizationState.id,
-            requestToken = "request_token",
-            tokenVerifier = "token_verifier",
-            params = params,
-            dataSourceId = GarminDataSource.DATA_SOURCE_ID
-        ))
+        spyingEventBus.publish(
+            this::class,
+            OAuth1Event.AuthorizedTokenAcquired(
+                stateId = request.authorizationState.id,
+                requestToken = "request_token",
+                tokenVerifier = "token_verifier",
+                params = params,
+                dataSourceId = GarminDataSource.DATA_SOURCE_ID,
+            ),
+        )
 
         // Verify that the user has access params saved
         val savedParams = accessParamService.getCurrentForInternalUserIdAndDataSource(userId, dataSourceId)
@@ -294,13 +338,13 @@ class GarminTest : OAuth1Test() {
         return oauth1Operator.acquireAccessToken(
             userId = userId,
             dataSourceId = dataSourceId,
-            requestToken = OAuth1RequestToken(
+            requestToken =
+            OAuth1RequestToken(
                 "test",
-                "test"
+                "test",
             ),
             verifier = "test",
-            params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams
+            params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams,
         )
     }
-
 }

@@ -6,9 +6,7 @@ import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
  * Transforms a [ThirdPartyData] into a [CarpDataPoint].
  */
 class CarpDataPointBuilder private constructor() {
-
     companion object {
-
         fun fromThirdPartyData(thirdPartyData: ThirdPartyData): List<CarpDataPoint> {
             if (thirdPartyData.rawResponse.isArray) {
                 val result: MutableList<CarpDataPoint> = mutableListOf()
@@ -16,18 +14,19 @@ class CarpDataPointBuilder private constructor() {
                     result.add(
                         CarpDataPoint(
                             getCarpHeaderFor(thirdPartyData),
-                            data
-                        )
+                            data,
+                        ),
                     )
                 }
                 return result
-            }
-            else return listOf(
-                CarpDataPoint(
-                    getCarpHeaderFor(thirdPartyData),
-                    thirdPartyData.rawResponse
+            } else {
+                return listOf(
+                    CarpDataPoint(
+                        getCarpHeaderFor(thirdPartyData),
+                        thirdPartyData.rawResponse,
+                    ),
                 )
-            )
+            }
         }
 
         private fun getCarpHeaderFor(data: ThirdPartyData): CarpDataPointHeader {
@@ -41,10 +40,8 @@ class CarpDataPointBuilder private constructor() {
                 userId = data.userId,
                 dataFormat = format,
                 triggerId = "Unknown",
-                deviceRoleName = "Patient's wearables"
+                deviceRoleName = "Patient's wearables",
             )
         }
-
     }
-
 }

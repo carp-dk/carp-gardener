@@ -27,5 +27,5 @@ data class DataCollectionPreparationEvent(
      * Raw ping notification from the third-part API
      * that may contain necessary information for collection.
      */
-    val rawPing: JsonNode
+    val rawPing: JsonNode,
 ) : DataSourceEvent()

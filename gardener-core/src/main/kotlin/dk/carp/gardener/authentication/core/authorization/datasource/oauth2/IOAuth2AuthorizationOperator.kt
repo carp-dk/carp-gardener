@@ -1,14 +1,13 @@
 package dk.carp.gardener.authentication.core.authorization.datasource.oauth2
 
-import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
+import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
 
 /**
  * Defines the necessary functions to complete the OAuth2 authorization flow
  * and to refresh the tokens.
  */
 interface IOAuth2AuthorizationOperator {
-
     /**
      * Returns a completed authorization URI string that can be used to redirect the user
      * to the vendor's website to authorize.
@@ -22,7 +21,11 @@ interface IOAuth2AuthorizationOperator {
      *
      * @return URI string.
      */
-    fun getCompleteAuthorizationUrlForState(stateId: String, requestedScopes: String, params: OAuth2AuthorizationRequestParams): String
+    fun getCompleteAuthorizationUrlForState(
+        stateId: String,
+        requestedScopes: String,
+        params: OAuth2AuthorizationRequestParams,
+    ): String
 
     /**
      * Retrieves OAuth2 access parameters for the given user noted by [userId] and
@@ -37,7 +40,12 @@ interface IOAuth2AuthorizationOperator {
      *
      * @throws IllegalStateException When the access parameters cannot be retrieved.
      */
-    fun retrieveAccessParams(userId: String, dataSourceId: String, authorizationCode: String, params: OAuth2AuthorizationRequestParams): OAuth2AccessParams
+    fun retrieveAccessParams(
+        userId: String,
+        dataSourceId: String,
+        authorizationCode: String,
+        params: OAuth2AuthorizationRequestParams,
+    ): OAuth2AccessParams
 
     /**
      * Refreshes OAuth2 access parameters for the given user noted by [userId] and
@@ -52,6 +60,10 @@ interface IOAuth2AuthorizationOperator {
      *
      * @throws IllegalStateException When the access parameters cannot be retrieved.
      */
-    fun refreshTokens(userId: String, dataSourceId: String, refreshToken: String, params: OAuth2TokenRefreshParams): OAuth2AccessParams
-
+    fun refreshTokens(
+        userId: String,
+        dataSourceId: String,
+        refreshToken: String,
+        params: OAuth2TokenRefreshParams,
+    ): OAuth2AccessParams
 }

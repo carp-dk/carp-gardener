@@ -6,14 +6,15 @@ import dk.carp.gardener.authentication.core.authorization.authorizationstate.OAu
 import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
 import dk.carp.gardener.authentication.implementation.repository.MongoAuthorizationStateRepository
 import io.vertx.junit5.VertxTestContext
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 /**
  * Integration tests for [MongoAuthorizationStateRepository]
  */
 class MongoAuthorizationStateRepositoryTest : ImplementationTest() {
-
     @Test
     fun statesCanBeInserted(testContext: VertxTestContext) {
         val userId = "statesCanBeInserted"
@@ -57,12 +58,9 @@ class MongoAuthorizationStateRepositoryTest : ImplementationTest() {
         testContext.completeNow()
     }
 
-    fun getMockFitbitAuthorizationState(userId: String): AuthorizationState {
-        return OAuth2AuthorizationState(
+    private fun getMockFitbitAuthorizationState(userId: String): AuthorizationState =
+        OAuth2AuthorizationState(
             userId = userId,
-            dataSourceId = FitbitDataSource.DATA_SOURCE_ID
+            dataSourceId = FitbitDataSource.DATA_SOURCE_ID,
         )
-    }
-
-
 }

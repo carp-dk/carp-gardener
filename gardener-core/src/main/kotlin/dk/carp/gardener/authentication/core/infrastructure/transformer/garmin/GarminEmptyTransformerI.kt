@@ -10,29 +10,15 @@ import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
  * The class is open due to mocking purposes during testing.
  */
 open class GarminEmptyTransformerI : GarminDataTypeTransformer {
+    override fun transformActivity(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformActivity(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformDailySummary(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformDailySummary(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformSleep(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformSleep(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformStress(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformStress(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
+    override fun transformBodyComposition(data: ThirdPartyData): List<Any> = listOf(data)
 
-    override fun transformBodyComposition(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
-    override fun transformRespiration(data: ThirdPartyData): List<Any> {
-        return listOf(data)
-    }
-
+    override fun transformRespiration(data: ThirdPartyData): List<Any> = listOf(data)
 }
