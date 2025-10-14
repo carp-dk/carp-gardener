@@ -23,7 +23,7 @@ application {
     mainClass.set("io.vertx.core.Launcher")
 }
 
-val mainVerticleName = "com.example.authenticationmodule.verticles.MainVerticle"
+val mainVerticleName = "dk.carp.gardener.authentication.verticles.MainVerticle"
 val watchForChange = "src/**/*"
 val doOnChange = "$projectDir/gradlew classes"
 

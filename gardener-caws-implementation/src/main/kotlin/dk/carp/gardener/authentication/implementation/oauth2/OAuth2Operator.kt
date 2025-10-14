@@ -8,7 +8,10 @@ import com.github.scribejava.core.oauth.AccessTokenRequestParams
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.github.scribejava.core.pkce.PKCE
 import com.google.common.hash.Hashing
+import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.IOAuth2AuthorizationOperator
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams
 import dk.carp.gardener.authentication.core.authorization.devices.dexcom.DexcomDataSource
 import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitAccessTokenResponseExtractor
 import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
@@ -31,7 +34,8 @@ import java.time.Instant
  * Provides an implementation for [IOAuth2AuthorizationOperator] and [IDataCollectionOperator].
  */
 class OAuth2Operator(
-    private val clientSettings: dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings,
+    private val clientSettings:
+    OAuth2ClientSettings,
     vertx: Vertx,
     private val properties: PropertiesConfig,
 ) : IOAuth2AuthorizationOperator,
@@ -67,7 +71,8 @@ class OAuth2Operator(
     override fun getCompleteAuthorizationUrlForState(
         stateId: String,
         requestedScopes: String,
-        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams,
+        params:
+        OAuth2AuthorizationRequestParams,
     ): String {
         if (params.additionalParamsForGrants.getMap().isNotEmpty()) {
             return service
@@ -104,7 +109,8 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         authorizationCode: String,
-        params: dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams,
+        params:
+        OAuth2AuthorizationRequestParams,
     ): OAuth2AccessParams {
         val request = createAccessTokenRequest(authorizationCode, params.additionalParamsForTokens.getMap())
         val rawResponse: String
@@ -205,7 +211,7 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         refreshToken: String,
-        params: dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams,
+        params: OAuth2TokenRefreshParams,
     ): OAuth2AccessParams {
         val request = createRefreshTokenRequest(refreshToken, params.additionalParams.getMap())
         val rawResponse: String
@@ -326,7 +332,7 @@ class OAuth2Operator(
         additionalParams: Map<String, String>?,
         scope: String? = null,
     ): OAuthRequest {
-        require(!(refreshToken == null || refreshToken.isEmpty())) { "The refreshToken cannot be null or empty" }
+        require(!refreshToken.isNullOrEmpty()) { "The refreshToken cannot be null or empty" }
         val request = OAuthRequest(api.accessTokenVerb, api.refreshTokenEndpoint)
         api.clientAuthentication.addClientAuthentication(request, service.apiKey, service.apiSecret)
 

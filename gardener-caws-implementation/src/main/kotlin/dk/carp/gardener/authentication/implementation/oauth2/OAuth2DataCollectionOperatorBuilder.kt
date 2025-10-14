@@ -16,6 +16,8 @@ class OAuth2DataCollectionOperatorBuilder(
     /**
      * Returns an OAuth2 specific [IDataCollectionOperator] configured with the [clientSettings]
      */
-    override fun createDataCollectionOperatorWithClientSettings(clientSettings: OAuth2ClientSettings): IDataCollectionOperator =
+    override fun createDataCollectionOperatorWithClientSettings(
+        clientSettings: OAuth2ClientSettings
+    ): IDataCollectionOperator =
         OAuth2Operator(clientSettings, vertx, properties)
 }

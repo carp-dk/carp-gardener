@@ -11,6 +11,8 @@ class OAuth1DataCollectionOperatorBuilder : IOAuth1DataCollectionOperatorBuilder
     /**
      * Returns an OAuth1 specific [IDataCollectionOperator] configured with the [clientSettings]
      */
-    override fun createDataCollectionOperatorWithClientSettings(clientSettings: OAuth1ClientSettings): IDataCollectionOperator =
+    override fun createDataCollectionOperatorWithClientSettings(
+        clientSettings: OAuth1ClientSettings
+    ): IDataCollectionOperator =
         OAuth1Operator(clientSettings)
 }
