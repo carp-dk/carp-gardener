@@ -9,8 +9,7 @@ import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsSer
  * Mock [IOAuth2DataCollectionOperatorBuilder].
  */
 class OAuth2DataCollectionOperatorBuilder(
-    private val stateService:
-    dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService,
+    private val stateService: dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService,
     private val accessParamsService: IAccessParamsService,
     private val fitbitAccessParams: JsonNode,
     private val fitbitActivitiesData: JsonNode,

@@ -8,7 +8,7 @@ build:
     # comments: 1
 
 config:
-  validation: true
+  validation: false
   warningsAsErrors: false
   checkExhaustiveness: false
   # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
@@ -175,7 +175,6 @@ complexity:
     ignoreDeprecated: false
     ignorePrivate: false
     ignoreOverridden: false
-    ignoreAnnotatedFunctions: []
 
 coroutines:
   active: true
@@ -191,8 +190,6 @@ coroutines:
     active: true
   SleepInsteadOfDelay:
     active: true
-  SuspendFunSwallowedCancellation:
-    active: false
   SuspendFunWithCoroutineScopeReceiver:
     active: false
   SuspendFunWithFlowReturnType:

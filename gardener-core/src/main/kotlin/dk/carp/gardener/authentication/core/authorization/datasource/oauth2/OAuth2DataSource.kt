@@ -34,9 +34,9 @@ abstract class OAuth2DataSource(
             eventType = OAuth2Event.AuthorizationCodeAcquired::class,
             dataSourceId = this.getId(),
             handler =
-            { event: OAuth2Event.AuthorizationCodeAcquired -> acquireAccessToken(event) } as (
-                DataSourceEvent,
-            ) -> Unit,
+                { event: OAuth2Event.AuthorizationCodeAcquired -> acquireAccessToken(event) } as (
+                    DataSourceEvent,
+                ) -> Unit,
         )
     }
 

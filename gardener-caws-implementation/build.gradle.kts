@@ -20,19 +20,13 @@ java {
 }
 
 application {
-    mainClass.set("io.vertx.core.Launcher")
+    // Ktor main application entry
+    mainClass.set("dk.carp.gardener.authentication.ktor.MainApplicationKt")
 }
-
-val mainVerticleName = "dk.carp.gardener.authentication.verticles.MainVerticle"
-val watchForChange = "src/**/*"
-val doOnChange = "$projectDir/gradlew classes"
 
 dependencies {
     // Gardener Core
     implementation(projects.core)
-
-    // BOM to align Vert.x modules
-    implementation(platform(libs.vertx.bom))
 
     // Libraries
     implementation(libs.guava)
@@ -46,10 +40,6 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.logback)
 
-    // Vert.x (versions via BOM)
-    implementation(libs.bundles.vertx.core)
-    implementation(libs.vertx.mongo)
-
     // RabbitMQ
     implementation(libs.rabbitmq)
 
@@ -59,29 +49,29 @@ dependencies {
     // Kotlin
     implementation(libs.kotlin.reflect)
 
+    // HTTP client/server
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.content.negotiation)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+
+    // MongoDB Java driver
+    implementation(libs.mongodb.driver.sync)
+
     // Test
-    testImplementation(libs.vertx.junit5)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.kotlin)
 }
 
 tasks.withType<ShadowJar> {
     archiveClassifier.set("fat")
-    manifest { attributes(mapOf("Main-Verticle" to mainVerticleName)) }
+    manifest { attributes(mapOf("Main-Class" to application.mainClass.get())) }
     mergeServiceFiles()
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
     testLogging { events = setOf(PASSED, SKIPPED, FAILED) }
-}
-
-tasks.withType<JavaExec> {
-    args =
-        listOf(
-            "run",
-            mainVerticleName,
-            "--redeploy=$watchForChange",
-            "--launcher-class=${application.mainClass.get()}",
-            "--on-redeploy=$doOnChange",
-        )
 }

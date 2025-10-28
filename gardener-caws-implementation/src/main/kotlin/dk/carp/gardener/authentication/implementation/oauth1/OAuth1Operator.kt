@@ -159,7 +159,7 @@ class OAuth1Operator(
                 "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
             )
         }
-        if (response.code < 200 || response.code >= 300) {
+        if (response.code !in 200..<300) {
             throw IllegalStateException(
                 "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${response.body}",
             )

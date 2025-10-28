@@ -1,16 +1,21 @@
 [versions]
-kotlin = "2.1.21"
+kotlin = "2.0.21"
 junit = "5.11.4"
 shadow = "8.0.0"
 slf4j = "2.0.17"
 logback = "1.5.13"
 jackson = "2.20.0"
-vertx = "4.5.21"
 mockitoKotlin = "5.4.0"
-detekt = "1.23.7"
+detekt = "1.23.8"
 ktlintGradle = "13.1.0"
 
+ktor = "3.0.3"
 
+mongodb = "5.1.2"
+
+
+# Coroutines
+kotlinx_coroutines = "1.9.0"
 # If you keep a native Netty for mac, pin it explicitly (or align to Vert.x BOM)
 netty = "4.1.67.Final"
 
@@ -24,14 +29,6 @@ jackson-jsr310        = { module = "com.fasterxml.jackson.datatype:jackson-datat
 slf4j-api    = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback      = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
-vertx-bom    = { module = "io.vertx:vertx-stack-depchain", version.ref = "vertx" }
-vertx-web    = { module = "io.vertx:vertx-web" }           # version comes from BOM
-vertx-client = { module = "io.vertx:vertx-web-client" }    # version comes from BOM
-vertx-kt     = { module = "io.vertx:vertx-lang-kotlin" }   # version comes from BOM
-vertx-config = { module = "io.vertx:vertx-config" }        # version from BOM
-vertx-config-spring = { module = "io.vertx:vertx-config-spring-config-server" } # from BOM
-vertx-mongo  = { module = "io.vertx:vertx-mongo-client" }  # from BOM
-
 rabbitmq     = { module = "com.rabbitmq:amqp-client", version = "5.18.0" }
 netty-osx    = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "netty" }
 
@@ -39,21 +36,22 @@ kotlin-stdlib  = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-vertx-junit5  = { module = "io.vertx:vertx-junit5" }       # version comes from BOM
 
 mockito-kotlin        = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 
+# Ktor
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson-jvm", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core-jvm", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio-jvm", version.ref = "ktor" }
+
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
+mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
 
-[bundles]
-vertx-core = [
-    "vertx-web",
-    "vertx-client",
-    "vertx-kt",
-    "vertx-config",
-    "vertx-config-spring"
-]
 
 [plugins]
 kotlin-jvm            = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

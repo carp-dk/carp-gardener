@@ -13,6 +13,14 @@ class OAuth1DataCollectionOperatorBuilder : IOAuth1DataCollectionOperatorBuilder
      */
     override fun createDataCollectionOperatorWithClientSettings(
         clientSettings: OAuth1ClientSettings
-    ): IDataCollectionOperator =
-        OAuth1Operator(clientSettings)
+    ): IDataCollectionOperator {
+        // Build Scribe service and return adapter backed by coroutine operator
+        val service =
+            com.github.scribejava.core.builder
+                .ServiceBuilder(clientSettings.consumerKey)
+                .apiSecret(clientSettings.consumerSecret)
+                .build(OAuth1ApiDefinition(clientSettings.requestTokenUri, clientSettings.accessTokenUri, clientSettings.authorizationUri))
+        val coroutineOp = CoroutineOAuth1Operator(clientSettings, service)
+        return AdapterOAuth1Operator(coroutineOp)
+    }
 }
