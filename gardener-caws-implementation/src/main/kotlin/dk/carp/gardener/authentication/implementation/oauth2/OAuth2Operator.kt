@@ -23,9 +23,18 @@ import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessPara
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
-import dk.carp.gardener.authentication.verticles.PropertiesConfig
-import io.vertx.core.Vertx
-import io.vertx.ext.web.client.WebClient
+import dk.carp.gardener.authentication.ktor.PropertiesConfig
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -34,10 +43,9 @@ import java.time.Instant
  * Provides an implementation for [IOAuth2AuthorizationOperator] and [IDataCollectionOperator].
  */
 class OAuth2Operator(
-    private val clientSettings:
-    OAuth2ClientSettings,
-    vertx: Vertx,
+    private val clientSettings: OAuth2ClientSettings,
     private val properties: PropertiesConfig,
+    private val httpClient: HttpClient = HttpClient(CIO) { expectSuccess = false },
 ) : IOAuth2AuthorizationOperator,
     IDataCollectionOperator {
     companion object {
@@ -52,8 +60,6 @@ class OAuth2Operator(
             .apiSecret(clientSettings.clientSecret)
             .callback(clientSettings.callbackUri)
             .build(api)
-
-    private val webClient = WebClient.create(vertx)
 
     /**
      * Returns a completed authorization URI string that can be used to redirect the user
@@ -71,8 +77,7 @@ class OAuth2Operator(
     override fun getCompleteAuthorizationUrlForState(
         stateId: String,
         requestedScopes: String,
-        params:
-        OAuth2AuthorizationRequestParams,
+        params: OAuth2AuthorizationRequestParams,
     ): String {
         if (params.additionalParamsForGrants.getMap().isNotEmpty()) {
             return service
@@ -109,8 +114,7 @@ class OAuth2Operator(
         userId: String,
         dataSourceId: String,
         authorizationCode: String,
-        params:
-        OAuth2AuthorizationRequestParams,
+        params: OAuth2AuthorizationRequestParams,
     ): OAuth2AccessParams {
         val request = createAccessTokenRequest(authorizationCode, params.additionalParamsForTokens.getMap())
         val rawResponse: String
@@ -123,18 +127,21 @@ class OAuth2Operator(
 
         val result = extractParams(userId, dataSourceId, rawResponse)
         if (dataSourceId == FitbitDataSource.DATA_SOURCE_ID) {
-            webClient
-                .postAbs("https://api.fitbit.com/1/user/-/apiSubscriptions/$userId.json?subscriberId=1")
-                .putHeader("Authorization", "Bearer ${result.extractAccessToken()}")
-                .putHeader("Content-Length", "0")
-                .send()
-                .onSuccess { res ->
-                    if (res.statusCode() >= 300) {
-                        LOGGER.info("Subscription creation failed (${res.statusCode()}): ${res.bodyAsString()}")
-                    } else {
-                        LOGGER.info("(HTTP ${res.statusCode()}) Fitbit notification created for user $userId")
+            runBlocking {
+                runCatching {
+                    httpClient.post("https://api.fitbit.com/1/user/-/apiSubscriptions/$userId.json") {
+                        parameter("subscriberId", "1")
+                        header("Authorization", "Bearer ${result.extractAccessToken()}")
                     }
-                }.onFailure { res -> LOGGER.info("Fitbit notification creation failed for user $userId: ${res.message}") }
+                }.onSuccess { response ->
+                    if (!response.status.isSuccess()) {
+                        val body = runCatching { response.bodyAsText() }.getOrDefault("")
+                        LOGGER.info("Subscription creation failed (${response.status.value}): $body")
+                    } else {
+                        LOGGER.info("(HTTP ${response.status.value}) Fitbit notification created for user $userId")
+                    }
+                }.onFailure { ex -> LOGGER.info("Fitbit notification creation failed for user $userId: ${ex.message}") }
+            }
         }
         if (dataSourceId == WithingsDataSource.DATA_SOURCE_ID) {
             // Get a nounce
@@ -150,15 +157,20 @@ class OAuth2Operator(
                     ).hashString(nonceConcatenatedParams, StandardCharsets.UTF_8)
                     .toString()
 
-            webClient
-                .postAbs("https://wbsapi.withings.net/v2/signature")
-                .addQueryParam("action", nonceAction)
-                .addQueryParam("client_id", clientId)
-                .addQueryParam("timestamp", nonceTimestamp.toString())
-                .addQueryParam("signature", nonceSignature)
-                .send()
-                .onSuccess { res ->
-                    val bodyNode = ConfiguredObjectMapper.instance.readTree(res.bodyAsString())
+            runBlocking {
+                runCatching {
+                    httpClient.post("https://wbsapi.withings.net/v2/signature") {
+                        parameter("action", nonceAction)
+                        parameter("client_id", clientId)
+                        parameter("timestamp", nonceTimestamp.toString())
+                        parameter("signature", nonceSignature)
+                    }
+                }.onSuccess { response ->
+                    if (!response.status.isSuccess()) {
+                        LOGGER.info("Error while getting nounce for Withings subscription for user $userId: HTTP ${response.status.value}")
+                        return@onSuccess
+                    }
+                    val bodyNode = ConfiguredObjectMapper.instance.readTree(response.bodyAsText())
 
                     val nonce = bodyNode.get("body").get("nonce").textValue()
                     val subAction = "subscribe"
@@ -172,23 +184,28 @@ class OAuth2Operator(
                             ).hashString(subConcatenatedParams, StandardCharsets.UTF_8)
                             .toString()
 
-                    webClient
-                        .postAbs("https://wbsapi.withings.net/notify")
-                        .putHeader("Authorization", "Bearer ${result.extractAccessToken()}")
-                        .putHeader("Content-Length", "0")
-                        .addQueryParam("action", subAction)
-                        .addQueryParam("callbackurl", subCallback)
-                        .addQueryParam("appli", subAppli)
-                        .addQueryParam("nonce", nonce)
-                        .addQueryParam("client_id", clientId)
-                        .addQueryParam("signature", subSignature)
-                        .send()
-                        .onSuccess { subRes ->
-                            LOGGER.info(
-                                "Withings subscription created for user $userId with appli 16 - (HTTP ${subRes.statusCode()}) ${subRes.bodyAsString()}",
-                            )
-                        }.onFailure { subRes -> LOGGER.info("Withings subscription creation failed for user $userId: ${subRes.message}") }
-                }.onFailure { res -> LOGGER.info("Error while getting nounce for Withings subscription for user $userId: ${res.message}") }
+                    runCatching {
+                        httpClient.post("https://wbsapi.withings.net/notify") {
+                            header("Authorization", "Bearer ${result.extractAccessToken()}")
+                            parameter("action", subAction)
+                            parameter("callbackurl", subCallback)
+                            parameter("appli", subAppli)
+                            parameter("nonce", nonce)
+                            parameter("client_id", clientId)
+                            parameter("signature", subSignature)
+                        }
+                    }.onSuccess { subscriptionResponse ->
+                        val body = runCatching { subscriptionResponse.bodyAsText() }.getOrDefault("")
+                        LOGGER.info(
+                            "Withings subscription created for user $userId with appli 16 - (HTTP ${subscriptionResponse.status.value}) $body",
+                        )
+                    }.onFailure { ex ->
+                        LOGGER.info("Withings subscription creation failed for user $userId: ${ex.message}")
+                    }
+                }.onFailure { ex ->
+                    LOGGER.info("Error while getting nounce for Withings subscription for user $userId: ${ex.message}")
+                }
+            }
         }
 
         return result
@@ -241,32 +258,32 @@ class OAuth2Operator(
         accessParams: AccessParams,
         callback: (String) -> Unit,
     ) {
-        val request =
-            webClient
-                .getAbs(uri.uri)
-                .putHeader("Authorization", "Bearer ${accessParams.extractAccessToken()}")
-        if (uri.queryParams != null) {
-            uri.queryParams!!.forEach { request.addQueryParam(it.key, it.value) }
-        }
-
-        request
-            .send()
-            .onSuccess { res ->
-                if (res.statusCode() < 200 || res.statusCode() >= 300) {
+        runBlocking {
+            val response =
+                try {
+                    withContext(Dispatchers.IO) {
+                        httpClient.get(uri.uri) {
+                            header("Authorization", "Bearer ${accessParams.extractAccessToken()}")
+                            uri.queryParams?.forEach { parameter(it.key, it.value) }
+                        }
+                    }
+                } catch (ex: Exception) {
                     throw IllegalStateException(
-                        "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.bodyAsString()}",
+                        "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
                     )
-                } else {
-                    LOGGER.info(
-                        "OAuth2 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.",
-                    )
-                    callback(res.bodyAsString())
                 }
-            }.onFailure { res ->
+
+            if (!response.status.isSuccess()) {
+                val body = runCatching { response.bodyAsText() }.getOrDefault("")
                 throw IllegalStateException(
-                    "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${res.message}",
+                    "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: $body",
                 )
             }
+            LOGGER.info(
+                "OAuth2 data successfully collected from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}.",
+            )
+            callback(response.bodyAsText())
+        }
     }
 
     private fun extractParams(

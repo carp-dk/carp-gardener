@@ -339,10 +339,10 @@ class GarminTest : OAuth1Test() {
             userId = userId,
             dataSourceId = dataSourceId,
             requestToken =
-            OAuth1RequestToken(
-                "test",
-                "test",
-            ),
+                OAuth1RequestToken(
+                    "test",
+                    "test",
+                ),
             verifier = "test",
             params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams,
         )
