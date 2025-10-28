@@ -32,8 +32,6 @@ dependencies {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
-        // If your Kotlin is >= 1.9.24, you can use JVM_21.
-        // If you're on 1.9.10, switch this to JvmTarget.JVM_17.
         jvmTarget.set(JvmTarget.JVM_21)
     }
 }

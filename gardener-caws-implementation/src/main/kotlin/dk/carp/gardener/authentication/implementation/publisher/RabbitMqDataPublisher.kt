@@ -6,7 +6,7 @@ import com.rabbitmq.client.ConnectionFactory
 import dk.carp.gardener.authentication.core.collection.data.TransformedData
 import dk.carp.gardener.authentication.core.collection.publisher.IDataPublisher
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
-import dk.carp.gardener.authentication.verticles.PropertiesConfig
+import dk.carp.gardener.authentication.ktor.PropertiesConfig
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
