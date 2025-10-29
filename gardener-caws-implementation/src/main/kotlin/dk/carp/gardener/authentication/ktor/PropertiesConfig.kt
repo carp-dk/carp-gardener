@@ -15,24 +15,27 @@ class PropertiesConfig(
     }
 
     private val properties: Map<String, Any?>
+    private val environmentOverrides: Map<String, String>
 
     init {
         LOGGER.info("The following profile is active: {}", profile)
         properties = loader.loadFromClasspath(profile)
+        environmentOverrides = EnvOverridesLoader.load()
         LOGGER.info("Application properties successfully set.")
     }
 
     fun getProperty(key: String): String =
-        properties[key]?.toString()
+        environmentOverrides[key]
+            ?: properties[key]?.toString()
             ?: throw IllegalArgumentException("No configuration value found for key '$key'")
 
-    fun getOptionalProperty(key: String): String? = properties[key]?.toString()
+    fun getOptionalProperty(key: String): String? = environmentOverrides[key] ?: properties[key]?.toString()
 
     fun isEnabled(
         key: String,
         default: Boolean = true,
     ): Boolean {
-        val raw = properties[key]?.toString() ?: return default
+        val raw = environmentOverrides[key] ?: properties[key]?.toString() ?: return default
         return when {
             raw.equals("true", ignoreCase = true) -> true
             raw.equals("false", ignoreCase = true) -> false
@@ -59,5 +62,75 @@ class PropertiesLoader(
         val rawConfig = resource.readText()
         LOGGER.info("Configuration file {} successfully read ({} bytes).", configFileName, rawConfig.length)
         return mapper.readValue(rawConfig, mapper.typeFactory.constructMapType(Map::class.java, String::class.java, Any::class.java))
+    }
+}
+
+private object EnvOverridesLoader {
+    private val LOGGER = LoggerFactory.getLogger(EnvOverridesLoader::class.java)
+
+    fun load(): Map<String, String> {
+        val overrides = mutableMapOf<String, String>()
+        overrides.putAll(loadFromDotEnv())
+        overrides.putAll(loadFromSystemEnv())
+        if (overrides.isNotEmpty()) {
+            LOGGER.info("Loaded {} configuration overrides from environment variables.", overrides.size)
+        }
+        return overrides
+    }
+
+    private fun loadFromSystemEnv(): Map<String, String> =
+        System.getenv()
+            .mapNotNull { (key, value) -> normalizeKey(key)?.let { it to value } }
+            .toMap()
+
+    private fun loadFromDotEnv(): Map<String, String> {
+        val overrides = mutableMapOf<String, String>()
+        val dotEnvPath = java.nio.file.Paths.get(".env")
+        if (!java.nio.file.Files.exists(dotEnvPath)) {
+            return overrides
+        }
+
+        try {
+            java.nio.file.Files
+                .readAllLines(dotEnvPath)
+                .forEach { line ->
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                        return@forEach
+                    }
+                    val separatorIndex = trimmed.indexOf('=')
+                    if (separatorIndex <= 0) {
+                        return@forEach
+                    }
+
+                    val rawKey = trimmed.substring(0, separatorIndex).trim()
+                    var rawValue = trimmed.substring(separatorIndex + 1).trim()
+                    if (rawValue.length >= 2 &&
+                        (
+                            (rawValue.startsWith("\"") && rawValue.endsWith("\"")) ||
+                                (rawValue.startsWith("'") && rawValue.endsWith("'"))
+                            )
+                    ) {
+                        rawValue = rawValue.substring(1, rawValue.length - 1)
+                    }
+
+                    val normalizedKey = normalizeKey(rawKey) ?: return@forEach
+                    overrides.putIfAbsent(normalizedKey, rawValue)
+                }
+        } catch (ex: Exception) {
+            LOGGER.warn("Failed loading .env overrides from {}: {}", dotEnvPath.toAbsolutePath(), ex.message)
+        }
+
+        return overrides
+    }
+
+    private fun normalizeKey(rawKey: String): String? {
+        if (rawKey.isBlank()) {
+            return null
+        }
+        return rawKey
+            .trim()
+            .lowercase()
+            .replace("__", ".")
     }
 }

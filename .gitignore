@@ -185,3 +185,10 @@ nbdist/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+### Environment ###
+/gardener-caws-implementation/.env
+/gardener-caws-implementation/_.local.env
+
+### Agents ###
+/.github/copilot-instructions.md
