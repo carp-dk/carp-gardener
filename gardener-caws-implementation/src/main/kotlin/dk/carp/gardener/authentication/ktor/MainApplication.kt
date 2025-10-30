@@ -50,6 +50,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@Suppress("LongMethod")
 fun main() {
     val properties = PropertiesConfig()
     val logger = LoggerFactory.getLogger("MainApplication")
@@ -259,6 +260,7 @@ private fun createMongoClient(properties: PropertiesConfig): MongoClient {
     return MongoClients.create(settings)
 }
 
+@Suppress("LongParameterList")
 private fun registerOAuth2DataSource(
     name: String,
     enabled: Boolean,
@@ -285,6 +287,7 @@ private fun registerOAuth2DataSource(
     logger.info("{} data source activated.", name)
 }
 
+@Suppress("LongParameterList")
 private fun registerOAuth1DataSource(
     name: String,
     enabled: Boolean,
@@ -321,17 +324,18 @@ private fun logAuthorizationSamples(
         return
     }
 
+    val baseAuthorizeUrl = "https://localhost:$port/wearables/api/authorize"
     logger.info(
-        "Authorization URI for Fitbit: https://localhost:{}/wearables/api/authorize/fitbit/userid?scopes=activity,heartrate,weight,sleep,nutrition,profile,settings&deploymentId=deploymentId",
-        port,
+        "Authorization URI for Fitbit: {}",
+        "$baseAuthorizeUrl/fitbit/userid?scopes=activity,heartrate,weight,sleep,nutrition,profile,settings&deploymentId=deploymentId",
     )
-    logger.info("Authorization URI for Garmin: https://localhost:{}/wearables/api/authorize/garmin/userid", port)
+    logger.info("Authorization URI for Garmin: {}/garmin/userid", baseAuthorizeUrl)
     logger.info(
-        "Authorization URI for Withings: http://localhost:{}/wearables/api/authorize/withings/userid?scopes=user.metrics,user.activity&deploymentId=deploymentId",
-        port,
+        "Authorization URI for Withings: {}",
+        "$baseAuthorizeUrl/withings/userid?scopes=user.metrics,user.activity&deploymentId=deploymentId",
     )
     logger.info(
-        "Authorization URI for Dexcom: https://localhost:{}/wearables/api/authorize/dexcom/userid?deploymentId=deploymentId&scopes=",
-        port,
+        "Authorization URI for Dexcom: {}",
+        "$baseAuthorizeUrl/dexcom/userid?deploymentId=deploymentId&scopes=",
     )
 }

@@ -28,10 +28,9 @@ abstract class DataSource(
             subscriber = this::class,
             eventType = DataCollectionPreparationEvent::class,
             dataSourceId = this.getId(),
-            handler =
-                { event: DataCollectionPreparationEvent -> prepareDataCollection(event) } as (
-                    DataSourceEvent,
-                ) -> Unit,
+            handler = { event: DataCollectionPreparationEvent ->
+                prepareDataCollection(event)
+            } as (DataSourceEvent) -> Unit,
         )
     }
 

@@ -334,6 +334,29 @@ class WithingsTest : OAuth2Test() {
         assertEquals(WithingsDataCollectionType.DAILY_ACTIVITY, publishedData.dataType as WithingsDataCollectionType)
     }
 
+    @Test
+    fun withingsTransformerReceivesFixturePayload() {
+        val userId = TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID
+        registerWithingsUserFor(userId)
+
+        val events = withingsDataSource.getDataCollectionPreparationEventFromPing(withingsActivitiesPing)
+        assertEquals(1, events.size)
+        events.forEach { event -> spyingEventBus.publish(this::class, event) }
+
+        val argumentCaptor = argumentCaptor<ThirdPartyData>()
+        verify(spyingWithingsTransformer, atLeast(1)).transformActivities(argumentCaptor.capture())
+
+        val captured = argumentCaptor.allValues.firstOrNull()
+        assertNotNull(captured)
+        assertEquals(withingsActivitiesData, captured.rawResponse)
+        val activities = captured.rawResponse.get("body").get("activities")
+        assertTrue(activities.isArray)
+        val firstActivity = activities.get(0)
+        assertNotNull(firstActivity)
+        assertEquals("2021-10-28", firstActivity.get("date").textValue())
+        assertEquals(1962, firstActivity.get("steps").intValue())
+    }
+
     private fun registerWithingsUserFor(userId: String): OAuth2AccessParams {
         val dataSourceId = WithingsDataSource.DATA_SOURCE_ID
         return oauth2Operator.retrieveAccessParams(

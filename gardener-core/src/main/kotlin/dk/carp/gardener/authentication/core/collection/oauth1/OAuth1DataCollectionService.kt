@@ -24,9 +24,9 @@ class OAuth1DataCollectionService(
             subscriber = this::class,
             eventType = DataCollectionExecutionEvent.OAuth1ExecutionEvent::class,
             handler =
-                { event: DataCollectionExecutionEvent.OAuth1ExecutionEvent ->
-                    executeDataCollectionRequest(event)
-                } as (IntegrationEvent) -> Unit,
+            { event: DataCollectionExecutionEvent.OAuth1ExecutionEvent ->
+                executeDataCollectionRequest(event)
+            } as (IntegrationEvent) -> Unit,
         )
     }
 
