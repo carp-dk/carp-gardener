@@ -67,9 +67,7 @@ class FitbitDataSource(
     override fun constructScopeStringsForAuthorizationUrl(scopes: List<String>?): String {
         if (scopes != null) {
             scopes.forEach {
-                if (!Scopes.isValid(it)) {
-                    throw IllegalArgumentException("The requested Fitbit scope $it is not valid!")
-                }
+                require(Scopes.isValid(it)) { "The requested Fitbit scope $it is not valid!" }
             }
             return scopes.joinToString(" ")
         }
@@ -129,6 +127,7 @@ class FitbitDataSource(
      *  - The notification is not formatted according to the vendor's specification and the parameters cannot be extracted.
      *  - The requested [DataCollectionType] is not valid.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun getDataCollectionPreparationEventFromPing(notification: String): List<DataCollectionPreparationEvent> {
         val eventList: MutableList<DataCollectionPreparationEvent> = mutableListOf()
         try {
@@ -147,7 +146,10 @@ class FitbitDataSource(
                 )
             }
         } catch (ex: Exception) {
-            throw IllegalArgumentException("Notification extraction failed for Fitbit: ${ex.message}. \nSent notification: $notification")
+            throw IllegalArgumentException(
+                "Notification extraction failed for Fitbit: ${ex.message}. \nSent notification: $notification",
+                ex,
+            )
         }
 
         return eventList

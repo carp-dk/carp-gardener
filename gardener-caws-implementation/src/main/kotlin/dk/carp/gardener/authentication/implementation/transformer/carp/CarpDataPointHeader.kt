@@ -18,4 +18,8 @@ data class CarpDataPointHeader(
     var uploadTime: Instant = Instant.now(),
     var startTime: Instant = Instant.now(),
     var endTime: Instant = Instant.now(),
-) : Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID = 1L
+    }
+}

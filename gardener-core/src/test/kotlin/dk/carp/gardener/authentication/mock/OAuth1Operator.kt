@@ -17,7 +17,7 @@ import dk.carp.gardener.authentication.core.common.util.uri.Uri
  * Mock [OAuth1Operator].
  */
 class OAuth1Operator(
-    private val stateService: IAuthorizationStateService,
+    @Suppress("UnusedPrivateProperty") private val stateService: IAuthorizationStateService,
     private val accessParamsService: IAccessParamsService,
     private val garminAccessParams: JsonNode,
     private val garminStressData: JsonNode,

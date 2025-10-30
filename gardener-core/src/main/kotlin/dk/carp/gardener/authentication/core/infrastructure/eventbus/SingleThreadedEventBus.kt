@@ -11,6 +11,7 @@ import kotlin.reflect.KClass
  * The class is open due to mocking purposes during testing.
  */
 open class SingleThreadedEventBus : EventBus() {
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     override fun publish(
         eventSource: KClass<*>,
         event: IntegrationEvent,

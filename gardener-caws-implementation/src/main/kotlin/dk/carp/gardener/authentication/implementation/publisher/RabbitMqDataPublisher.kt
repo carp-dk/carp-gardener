@@ -18,6 +18,10 @@ class RabbitMqDataPublisher(
 ) : IDataPublisher {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(RabbitMqDataPublisher::class.java)
+        private const val DEFAULT_CONNECTION_TIMEOUT_MILLIS = 60_000
+        private const val DEFAULT_REQUESTED_HEARTBEAT_SECONDS = 60
+        private const val DEFAULT_HANDSHAKE_TIMEOUT_MILLIS = 60_000
+        private const val DEFAULT_NETWORK_RECOVERY_INTERVAL_MILLIS = 5_000
     }
 
     private val channel: Channel
@@ -30,10 +34,10 @@ class RabbitMqDataPublisher(
                 port = properties.getProperty("rabbitmq.port").toInt()
                 username = properties.getProperty("rabbitmq.username")
                 password = properties.getProperty("rabbitmq.password")
-                connectionTimeout = 60000
-                requestedHeartbeat = 60
-                handshakeTimeout = 60000
-                networkRecoveryInterval = 5000
+                connectionTimeout = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+                requestedHeartbeat = DEFAULT_REQUESTED_HEARTBEAT_SECONDS
+                handshakeTimeout = DEFAULT_HANDSHAKE_TIMEOUT_MILLIS
+                networkRecoveryInterval = DEFAULT_NETWORK_RECOVERY_INTERVAL_MILLIS.toLong()
             }
 
         LOGGER.info("RabbitMQ connection establishment starting for ${factory.host}:${factory.port}")

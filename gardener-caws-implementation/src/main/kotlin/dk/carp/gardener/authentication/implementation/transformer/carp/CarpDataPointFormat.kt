@@ -11,4 +11,8 @@ import java.io.Serializable
 data class CarpDataPointFormat(
     val namespace: String,
     var name: String,
-) : Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID = 1L
+    }
+}

@@ -160,6 +160,7 @@ class WithingsDataSource(
      *  - The notification is not formatted according to the vendor's specification and the parameters cannot be extracted.
      *  - The requested [DataCollectionType] is not valid.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun getDataCollectionPreparationEventFromPing(notification: String): List<DataCollectionPreparationEvent> {
         val node: ObjectNode = JsonNodeFactory.instance.objectNode()
         try {
@@ -170,7 +171,10 @@ class WithingsDataSource(
                 }
             }
         } catch (ex: Exception) {
-            throw IllegalArgumentException("Notification extraction failed for Withings: ${ex.message}. \nSent notification: $notification")
+            throw IllegalArgumentException(
+                "Notification extraction failed for Withings: ${ex.message}. \nSent notification: $notification",
+                ex,
+            )
         }
 
         val event: DataCollectionPreparationEvent
@@ -187,7 +191,10 @@ class WithingsDataSource(
                     rawPing = node,
                 )
         } catch (ex: Exception) {
-            throw IllegalArgumentException("Notification extraction failed for Withings: ${ex.message}. \nSent notification: $node")
+            throw IllegalArgumentException(
+                "Notification extraction failed for Withings: ${ex.message}. \nSent notification: $node",
+                ex,
+            )
         }
 
         return listOf(event)

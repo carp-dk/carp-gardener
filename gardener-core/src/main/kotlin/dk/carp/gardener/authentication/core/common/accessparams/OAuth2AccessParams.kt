@@ -20,6 +20,7 @@ class OAuth2AccessParams(
         const val TOKEN_TYPE_KEY = "token_type"
         const val EXPIRES_IN_KEY = "expires_in"
         const val SCOPES_KEY = "scope"
+        private const val TOKEN_EXPIRY_GRACE_SECONDS = 180L
     }
 
     constructor(
@@ -73,6 +74,6 @@ class OAuth2AccessParams(
      */
     fun determineExpiration(): Boolean {
         val expiresIn = extractExpiresIn() ?: return true
-        return updatedAt.plusSeconds((expiresIn - 180)) < Instant.now()
+        return updatedAt.plusSeconds(expiresIn - TOKEN_EXPIRY_GRACE_SECONDS) < Instant.now()
     }
 }

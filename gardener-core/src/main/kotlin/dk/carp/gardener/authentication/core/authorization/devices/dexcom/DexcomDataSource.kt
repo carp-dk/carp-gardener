@@ -112,6 +112,7 @@ class DexcomDataSource(
      *  - The notification is not formatted according to the vendor's specification and the parameters cannot be extracted.
      *  - The requested [DataCollectionType] is not valid.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun getDataCollectionPreparationEventFromPing(notification: String): List<DataCollectionPreparationEvent> {
         val events: MutableList<DataCollectionPreparationEvent> = mutableListOf()
 
@@ -129,7 +130,10 @@ class DexcomDataSource(
                 ),
             )
         } catch (ex: Exception) {
-            throw IllegalArgumentException("Notification extraction failed for Dexcom: ${ex.message}. \nSent notification: $notification")
+            throw IllegalArgumentException(
+                "Notification extraction failed for Dexcom: ${ex.message}. \nSent notification: $notification",
+                ex,
+            )
         }
 
         return events

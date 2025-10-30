@@ -19,6 +19,7 @@ import dk.carp.gardener.authentication.core.common.util.uri.Uri
 /**
  * Mock [OAuth2Operator].
  */
+@Suppress("LongParameterList")
 class OAuth2Operator(
     private val stateService: IAuthorizationStateService,
     private val accessParamsService: IAccessParamsService,
@@ -27,7 +28,7 @@ class OAuth2Operator(
     private val withingsAccessParams: JsonNode,
     private val withingsActivitiesData: JsonNode,
     private val dexcomAccessParams: JsonNode,
-    private val dexcomEgvsData: JsonNode,
+    @Suppress("UnusedPrivateProperty") private val dexcomEgvsData: JsonNode,
 ) : IOAuth2AuthorizationOperator,
     IDataCollectionOperator {
     override fun getCompleteAuthorizationUrlForState(

@@ -18,6 +18,12 @@ class CoroutineOAuth1Operator(
     private val clientSettings: OAuth1ClientSettings,
     private val service: OAuth10aService,
 ) {
+    companion object {
+        private const val HTTP_SUCCESS_LOWER_BOUND = 200
+        private const val HTTP_SUCCESS_UPPER_BOUND_EXCLUSIVE = 300
+    }
+
+    @Suppress("UnusedParameter")
     suspend fun getCompleteAuthorizationUrlForUser(
         stateId: String,
         requestToken: OAuth1RequestToken,
@@ -38,17 +44,19 @@ class CoroutineOAuth1Operator(
             }
         }
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter")
     suspend fun acquireUnsignedRequestToken(params: OAuth1AuthorizationRequestParams): OAuth1RequestToken =
         withContext(Dispatchers.IO) {
             val token =
                 try {
                     service.requestToken
                 } catch (ex: Exception) {
-                    throw IllegalStateException("Failed OAUth1 Unsigned Token request: ${ex.message}")
+                    throw IllegalStateException("Failed OAUth1 Unsigned Token request: ${ex.message}", ex)
                 }
             OAuth1RequestToken(token.token, token.tokenSecret)
         }
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter")
     suspend fun acquireAccessToken(
         userId: String,
         dataSourceId: String,
@@ -66,7 +74,10 @@ class CoroutineOAuth1Operator(
                             verifier,
                         ).rawResponse
                 } catch (ex: Exception) {
-                    throw IllegalStateException("Failed OAUth1 Access Token request for $dataSourceId/$userId: ${ex.message}")
+                    throw IllegalStateException(
+                        "Failed OAUth1 Access Token request for $dataSourceId/$userId: ${ex.message}",
+                        ex,
+                    )
                 }
             // Use local extraction logic (copied from original OAuth1Operator) to avoid accessing private members
             when (dataSourceId) {
@@ -78,6 +89,7 @@ class CoroutineOAuth1Operator(
             }
         }
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter", "UseCheckOrError")
     suspend fun executeRequest(
         uri: Uri,
         dataType: DataCollectionType,
@@ -92,12 +104,14 @@ class CoroutineOAuth1Operator(
                 try {
                     service.execute(request)
                 } catch (ex: Exception) {
-                    throw IllegalStateException("Failed OAUth1 http request for ${ap.dataSourceId}/${ap.internalUserId}: ${ex.message}")
+                    throw IllegalStateException(
+                        "Failed OAUth1 http request for ${ap.dataSourceId}/${ap.internalUserId}: ${ex.message}",
+                        ex,
+                    )
                 }
 
-            if (response.code !in 200..<300
-            ) {
-                throw IllegalStateException("Failed OAUth1 http request for ${ap.dataSourceId}/${ap.internalUserId}: ${response.body}")
+            if (response.code !in HTTP_SUCCESS_LOWER_BOUND until HTTP_SUCCESS_UPPER_BOUND_EXCLUSIVE) {
+                error("Failed OAUth1 http request for ${ap.dataSourceId}/${ap.internalUserId}: ${response.body}")
             }
             response.body
         }
