@@ -12,12 +12,9 @@ class TestUtil private constructor() {
          * returns the content of the resource as a String.
          */
         fun getResourceAsText(path: String): String {
-            val resource: URL
-            try {
-                resource = object {}.javaClass.getResource(path)
-            } catch (ex: Exception) {
-                throw IllegalArgumentException("An error is encountered while trying to access resource:  $path: ${ex.message}")
-            }
+            val resource: URL =
+                object {}.javaClass.getResource(path)
+                    ?: throw IllegalArgumentException("Resource not found at path: $path")
             return resource.readText()
         }
     }

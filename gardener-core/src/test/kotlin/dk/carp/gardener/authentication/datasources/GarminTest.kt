@@ -335,14 +335,11 @@ class GarminTest : OAuth1Test() {
 
     private fun registerGarminUserFor(userId: String): OAuth1AccessParams {
         val dataSourceId = GarminDataSource.DATA_SOURCE_ID
+        val requestToken = OAuth1RequestToken("test", "test")
         return oauth1Operator.acquireAccessToken(
             userId = userId,
             dataSourceId = dataSourceId,
-            requestToken =
-                OAuth1RequestToken(
-                    "test",
-                    "test",
-                ),
+            requestToken = requestToken,
             verifier = "test",
             params = garminDataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams,
         )

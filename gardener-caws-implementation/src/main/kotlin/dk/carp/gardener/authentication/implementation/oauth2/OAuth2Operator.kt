@@ -110,6 +110,7 @@ class OAuth2Operator(
      *
      * @throws IllegalStateException When the access parameters cannot be retrieved.
      */
+    @Suppress("LongMethod", "TooGenericExceptionCaught", "UseCheckOrError")
     override fun retrieveAccessParams(
         userId: String,
         dataSourceId: String,
@@ -121,7 +122,10 @@ class OAuth2Operator(
         try {
             rawResponse = sendAccessTokenRequestSync(request)
         } catch (ex: Exception) {
-            throw IllegalStateException("OAuth2 Access Params retrieval failed from third-party API for $dataSourceId/$userId.")
+            throw IllegalStateException(
+                "OAuth2 Access Params retrieval failed from third-party API for $dataSourceId/$userId.",
+                ex,
+            )
         }
         LOGGER.info("OAuth2 Access Params are successfully retrieved from third-party API for $dataSourceId/$userId.")
 
@@ -224,6 +228,7 @@ class OAuth2Operator(
      *
      * @throws IllegalStateException When the access parameters cannot be retrieved.
      */
+    @Suppress("TooGenericExceptionCaught", "UseCheckOrError")
     override fun refreshTokens(
         userId: String,
         dataSourceId: String,
@@ -235,7 +240,10 @@ class OAuth2Operator(
         try {
             rawResponse = sendAccessTokenRequestSync(request)
         } catch (ex: Exception) {
-            throw IllegalStateException("OAuth2 Refresh Token retrieval failed from third-party API for $dataSourceId/$userId.")
+            throw IllegalStateException(
+                "OAuth2 Refresh Token retrieval failed from third-party API for $dataSourceId/$userId.",
+                ex,
+            )
         }
 
         LOGGER.info("OAuth2 tokens are successfully refreshed from third-party API for $dataSourceId/$userId.")
@@ -252,6 +260,7 @@ class OAuth2Operator(
      *
      * @throws IllegalStateException When the data collection failed.
      */
+    @Suppress("TooGenericExceptionCaught", "UseCheckOrError")
     override fun executeRequest(
         uri: Uri,
         dataType: DataCollectionType,
@@ -270,6 +279,7 @@ class OAuth2Operator(
                 } catch (ex: Exception) {
                     throw IllegalStateException(
                         "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
+                        ex,
                     )
                 }
 

@@ -54,6 +54,7 @@ class CoroutineOAuth2Operator(
                 .build()
         }
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter")
     suspend fun retrieveAccessParams(
         userId: String,
         dataSourceId: String,
@@ -64,7 +65,10 @@ class CoroutineOAuth2Operator(
             try {
                 withContext(Dispatchers.IO) { service.getAccessToken(authorizationCode) }
             } catch (ex: Exception) {
-                throw IllegalStateException("OAuth2 Access Params retrieval failed from third-party API for $dataSourceId/$userId.")
+                throw IllegalStateException(
+                    "OAuth2 Access Params retrieval failed from third-party API for $dataSourceId/$userId.",
+                    ex,
+                )
             }
 
         val rawResponse = token.rawResponse ?: token.accessToken
@@ -107,6 +111,7 @@ class CoroutineOAuth2Operator(
         return result
     }
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter")
     suspend fun refreshTokens(
         userId: String,
         dataSourceId: String,
@@ -117,7 +122,10 @@ class CoroutineOAuth2Operator(
             try {
                 withContext(Dispatchers.IO) { service.refreshAccessToken(refreshToken) }
             } catch (ex: Exception) {
-                throw IllegalStateException("OAuth2 Refresh Token retrieval failed from third-party API for $dataSourceId/$userId.")
+                throw IllegalStateException(
+                    "OAuth2 Refresh Token retrieval failed from third-party API for $dataSourceId/$userId.",
+                    ex,
+                )
             }
 
         val rawResponse = token.rawResponse ?: token.accessToken
@@ -161,6 +169,7 @@ class CoroutineOAuth2Operator(
 
     // Note: token exchange and refresh use ScribeJava's blocking helpers wrapped in IO dispatcher
 
+    @Suppress("TooGenericExceptionCaught", "UnusedParameter", "UseCheckOrError")
     suspend fun executeRequest(
         uri: Uri,
         dataType: DataCollectionType,
@@ -175,6 +184,7 @@ class CoroutineOAuth2Operator(
             } catch (ex: Exception) {
                 throw IllegalStateException(
                     "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
+                    ex,
                 )
             }
 

@@ -16,6 +16,7 @@ class OAuth1DataCollectionOperatorBuilder(
     private val garminAccessParams: JsonNode,
     private val garminStressData: JsonNode,
 ) : IOAuth1DataCollectionOperatorBuilder {
+    @Suppress("UnusedParameter", "ParameterListWrapping")
     override fun createDataCollectionOperatorWithClientSettings(clientSettings: OAuth1ClientSettings): IDataCollectionOperator =
         OAuth1Operator(
             stateService,

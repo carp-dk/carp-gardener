@@ -2,6 +2,7 @@ package dk.carp.gardener.authentication.ktor
 
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import org.slf4j.LoggerFactory
+import java.io.IOException
 
 /**
  * Simple configuration loader that reads JSON profiles from the classpath.
@@ -104,20 +105,14 @@ private object EnvOverridesLoader {
                     }
 
                     val rawKey = trimmed.substring(0, separatorIndex).trim()
-                    var rawValue = trimmed.substring(separatorIndex + 1).trim()
-                    if (rawValue.length >= 2 &&
-                        (
-                            (rawValue.startsWith("\"") && rawValue.endsWith("\"")) ||
-                                (rawValue.startsWith("'") && rawValue.endsWith("'"))
-                            )
-                    ) {
-                        rawValue = rawValue.substring(1, rawValue.length - 1)
-                    }
+                    var rawValue = trimmed.substring(separatorIndex + 1).trim().stripWrappingQuotes()
 
                     val normalizedKey = normalizeKey(rawKey) ?: return@forEach
                     overrides.putIfAbsent(normalizedKey, rawValue)
                 }
-        } catch (ex: Exception) {
+        } catch (ex: IOException) {
+            LOGGER.warn("Failed loading .env overrides from {}: {}", dotEnvPath.toAbsolutePath(), ex.message)
+        } catch (ex: SecurityException) {
             LOGGER.warn("Failed loading .env overrides from {}: {}", dotEnvPath.toAbsolutePath(), ex.message)
         }
 
@@ -132,5 +127,16 @@ private object EnvOverridesLoader {
             .trim()
             .lowercase()
             .replace("__", ".")
+    }
+
+    private fun String.stripWrappingQuotes(): String {
+        if (length < 2) {
+            return this
+        }
+        return when {
+            (startsWith("\"") && endsWith("\"")) -> substring(1, length - 1)
+            (startsWith("'") && endsWith("'")) -> substring(1, length - 1)
+            else -> this
+        }
     }
 }

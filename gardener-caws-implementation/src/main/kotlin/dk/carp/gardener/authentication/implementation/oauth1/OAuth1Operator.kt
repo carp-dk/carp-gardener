@@ -28,6 +28,8 @@ class OAuth1Operator(
     IDataCollectionOperator {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(OAuth1Operator::class.java)
+        private const val HTTP_SUCCESS_LOWER_BOUND = 200
+        private const val HTTP_SUCCESS_UPPER_BOUND_EXCLUSIVE = 300
     }
 
     private val service: OAuth10aService =
@@ -76,12 +78,13 @@ class OAuth1Operator(
      *
      * @throws IllegalStateException When an error is encountered during the communication with the vendor.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun acquireUnsignedRequestToken(params: OAuth1AuthorizationRequestParams): OAuth1RequestToken {
         val token: com.github.scribejava.core.model.OAuth1RequestToken
         try {
             token = service.requestToken
         } catch (ex: Exception) {
-            throw IllegalStateException("Failed OAUth1 Unsigned Token request: ${ex.message}")
+            throw IllegalStateException("Failed OAUth1 Unsigned Token request: ${ex.message}", ex)
         }
 
         LOGGER.info("OAuth1 Unsigned Token successfully received from third-party API.")
@@ -104,6 +107,7 @@ class OAuth1Operator(
      *
      * @throws IllegalStateException When an error is encountered during the communication with the vendor.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun acquireAccessToken(
         userId: String,
         dataSourceId: String,
@@ -121,7 +125,10 @@ class OAuth1Operator(
                         verifier,
                     ).rawResponse
         } catch (ex: Exception) {
-            throw IllegalStateException("Failed OAUth1 Access Token request for $dataSourceId/$userId: ${ex.message}")
+            throw IllegalStateException(
+                "Failed OAUth1 Access Token request for $dataSourceId/$userId: ${ex.message}",
+                ex,
+            )
         }
 
         LOGGER.info("OAuth1 Access token is successfully retrieved from third-party API for $dataSourceId/$userId.")
@@ -138,6 +145,7 @@ class OAuth1Operator(
      *
      * @throws IllegalStateException When the data collection failed.
      */
+    @Suppress("TooGenericExceptionCaught")
     override fun executeRequest(
         uri: Uri,
         dataType: DataCollectionType,
@@ -157,12 +165,11 @@ class OAuth1Operator(
         } catch (ex: Exception) {
             throw IllegalStateException(
                 "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${ex.message}",
+                ex,
             )
         }
-        if (response.code !in 200..<300) {
-            throw IllegalStateException(
-                "Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${response.body}",
-            )
+        if (response.code !in HTTP_SUCCESS_LOWER_BOUND until HTTP_SUCCESS_UPPER_BOUND_EXCLUSIVE) {
+            error("Failed OAUth1 http request for ${accessParams.dataSourceId}/${accessParams.internalUserId}: ${response.body}")
         }
 
         LOGGER.info(

@@ -19,6 +19,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import org.slf4j.Logger
 
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 fun Application.configureRouting(
     dataSourceRegistry: IDataSourceRegistry,
     eventBus: IEventBus,

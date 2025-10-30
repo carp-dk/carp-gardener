@@ -18,6 +18,7 @@ import java.util.UUID
     JsonSubTypes.Type(value = OAuth1AccessParams::class, name = "oauth1"),
     JsonSubTypes.Type(value = OAuth2AccessParams::class, name = "oauth2"),
 )
+@Suppress("LongParameterList")
 abstract class AccessParams(
     /**
      * The application specific identifier of the user.
@@ -74,5 +75,5 @@ abstract class AccessParams(
      */
     fun getParamValueFor(key: String): String =
         params.get(key)?.textValue()
-            ?: throw IllegalStateException("Key $key is not present in the additional parameters field.")
+            ?: error("Key $key is not present in the additional parameters field.")
 }
