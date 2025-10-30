@@ -42,6 +42,7 @@ import dk.carp.gardener.authentication.implementation.repository.CoroutineMongoA
 import dk.carp.gardener.authentication.implementation.transformer.withings.WithingsCarpTransformerI
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -226,9 +227,12 @@ fun main() {
             configureRouting(dataSourceRegistry, eventBus, properties, logger)
         }
 
+    server.environment.monitor.subscribe(ApplicationStarted) {
+        logger.info("Ktor server started on port {}", webServerPort)
+        logAuthorizationSamples(webServerPort, properties, logger)
+    }
+
     server.start(wait = true)
-    logger.info("Ktor server started on port {}", webServerPort)
-    logAuthorizationSamples(webServerPort, properties, logger)
 }
 
 fun Application.module() {
@@ -323,7 +327,7 @@ private fun logAuthorizationSamples(
     )
     logger.info("Authorization URI for Garmin: https://localhost:{}/wearables/api/authorize/garmin/userid", port)
     logger.info(
-        "Authorization URI for Withings: https://localhost:{}/wearables/api/authorize/withings/userid?scopes=user.metrics,user.activitys&deploymentId=deploymentId",
+        "Authorization URI for Withings: http://localhost:{}/wearables/api/authorize/withings/userid?scopes=user.metrics,user.activity&deploymentId=deploymentId",
         port,
     )
     logger.info(
