@@ -31,32 +31,34 @@ class CoroutineMongoAuthorizationStateRepositoryTest {
     }
 
     @Test
-    fun `upsert stores authorization state`() = runBlocking {
-        val state = OAuth2AuthorizationState("user", "withings")
+    fun `upsert stores authorization state`() =
+        runBlocking {
+            val state = OAuth2AuthorizationState("user", "withings")
 
-        repository.upsert(state)
+            repository.upsert(state)
 
-        val documentCaptor = argumentCaptor<Document>()
-        verify(collection).replaceOne(any(), documentCaptor.capture(), any<ReplaceOptions>())
-        assertEquals(state.id, documentCaptor.firstValue.getString("_id"))
-    }
+            val documentCaptor = argumentCaptor<Document>()
+            verify(collection).replaceOne(any(), documentCaptor.capture(), any<ReplaceOptions>())
+            assertEquals(state.id, documentCaptor.firstValue.getString("_id"))
+        }
 
     @Test
-    fun `findById returns latest state`() = runBlocking {
-        val state = OAuth2AuthorizationState("user", "withings")
-        val document = documentFrom(state)
+    fun `findById returns latest state`() =
+        runBlocking {
+            val state = OAuth2AuthorizationState("user", "withings")
+            val document = documentFrom(state)
 
-        val iterable: FindIterable<Document> = mock()
-        whenever(collection.find(any<org.bson.conversions.Bson>())).thenReturn(iterable)
-        whenever(iterable.sort(any())).thenReturn(iterable)
-        whenever(iterable.first()).thenReturn(document)
+            val iterable: FindIterable<Document> = mock()
+            whenever(collection.find(any<org.bson.conversions.Bson>())).thenReturn(iterable)
+            whenever(iterable.sort(any())).thenReturn(iterable)
+            whenever(iterable.first()).thenReturn(document)
 
-        val result = repository.findById(state.id)
+            val result = repository.findById(state.id)
 
-        assertNotNull(result)
-        assertEquals(state.userId, result!!.userId)
-        assertEquals(state.dataSourceId, result.dataSourceId)
-    }
+            assertNotNull(result)
+            assertEquals(state.userId, result!!.userId)
+            assertEquals(state.dataSourceId, result.dataSourceId)
+        }
 
     private fun documentFrom(state: OAuth2AuthorizationState): Document {
         val json = ConfiguredObjectMapper.instance.writeValueAsString(state)
