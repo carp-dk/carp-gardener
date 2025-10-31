@@ -31,32 +31,34 @@ class CoroutineMongoAccessParamsRepositoryTest {
     }
 
     @Test
-    fun `upsert stores document in collection`() = runBlocking {
-        val params = sampleAccessParams()
+    fun `upsert stores document in collection`() =
+        runBlocking {
+            val params = sampleAccessParams()
 
-        repository.upsert(params)
+            repository.upsert(params)
 
-        val documentCaptor = argumentCaptor<Document>()
-        verify(collection).replaceOne(any(), documentCaptor.capture(), any<ReplaceOptions>())
-        assertEquals(params.id, documentCaptor.firstValue.getString("_id"))
-    }
+            val documentCaptor = argumentCaptor<Document>()
+            verify(collection).replaceOne(any(), documentCaptor.capture(), any<ReplaceOptions>())
+            assertEquals(params.id, documentCaptor.firstValue.getString("_id"))
+        }
 
     @Test
-    fun `getLatestByInternal returns most recent access params`() = runBlocking {
-        val params = sampleAccessParams()
-        val document = documentFrom(params)
+    fun `getLatestByInternal returns most recent access params`() =
+        runBlocking {
+            val params = sampleAccessParams()
+            val document = documentFrom(params)
 
-        val iterable: FindIterable<Document> = mock()
-        whenever(collection.find(any<org.bson.conversions.Bson>())).thenReturn(iterable)
-        whenever(iterable.sort(any())).thenReturn(iterable)
-        whenever(iterable.first()).thenReturn(document)
+            val iterable: FindIterable<Document> = mock()
+            whenever(collection.find(any<org.bson.conversions.Bson>())).thenReturn(iterable)
+            whenever(iterable.sort(any())).thenReturn(iterable)
+            whenever(iterable.first()).thenReturn(document)
 
-        val result = repository.getLatestByInternalOrExternalUserIdAndDataSourceId("user", "withings")
+            val result = repository.getLatestByInternalOrExternalUserIdAndDataSourceId("user", "withings")
 
-        assertNotNull(result)
-        assertEquals(params.internalUserId, result!!.internalUserId)
-        assertEquals(params.dataSourceId, result.dataSourceId)
-    }
+            assertNotNull(result)
+            assertEquals(params.internalUserId, result!!.internalUserId)
+            assertEquals(params.dataSourceId, result.dataSourceId)
+        }
 
     private fun sampleAccessParams(): OAuth2AccessParams =
         OAuth2AccessParams(
