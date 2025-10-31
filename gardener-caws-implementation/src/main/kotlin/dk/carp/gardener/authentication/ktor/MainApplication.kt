@@ -324,7 +324,7 @@ private fun logAuthorizationSamples(
         return
     }
 
-    val baseAuthorizeUrl = "https://localhost:$port/wearables/api/authorize"
+    val baseAuthorizeUrl = "http://localhost:$port/wearables/api/authorize"
     logger.info(
         "Authorization URI for Fitbit: {}",
         "$baseAuthorizeUrl/fitbit/userid?scopes=activity,heartrate,weight,sleep,nutrition,profile,settings&deploymentId=deploymentId",

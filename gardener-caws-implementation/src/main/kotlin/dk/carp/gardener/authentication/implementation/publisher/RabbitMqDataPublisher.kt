@@ -58,7 +58,7 @@ class RabbitMqDataPublisher(
                 null,
                 serializedData.toByteArray(),
             )
-            LOGGER.info("New datapoint successfully published to ${properties.getProperty("rabbitmq.queue.name")}.")
+            LOGGER.info("New data stream payload successfully published to ${properties.getProperty("rabbitmq.queue.name")}.")
         } catch (ex: IOException) {
             LOGGER.info("Exception thrown while trying to publish data into RabbitMQ stream: $ex")
         }
