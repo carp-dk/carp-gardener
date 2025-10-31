@@ -59,7 +59,10 @@ class WithingsCarpTransformerITest {
 
         assertEquals(1, request.apiVersion.major)
         assertEquals(1, request.apiVersion.minor)
-        val sequence = request.batch.sequences.toList().single()
+        val sequence =
+            request.batch.sequences
+                .toList()
+                .single()
 
         assertEquals(studyDeploymentId, request.studyDeploymentId.stringRepresentation)
         assertEquals("Patient's wearables", sequence.dataStream.deviceRoleName)
