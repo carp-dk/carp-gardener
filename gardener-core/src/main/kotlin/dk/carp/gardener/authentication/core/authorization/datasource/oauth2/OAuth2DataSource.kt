@@ -28,15 +28,17 @@ abstract class OAuth2DataSource(
     protected val authorizationOperator: IOAuth2AuthorizationOperator,
 ) : DataSource(accessParamsService, stateService, eventBus) {
     init {
-        @Suppress("UNCHECKED_CAST")
+        val authorizationCodeHandler: (DataSourceEvent) -> Unit = { event ->
+            if (event is OAuth2Event.AuthorizationCodeAcquired) {
+                acquireAccessToken(event)
+            }
+        }
+
         eventBus.subscribe(
             subscriber = this::class,
             eventType = OAuth2Event.AuthorizationCodeAcquired::class,
             dataSourceId = this.getId(),
-            handler =
-            { event: OAuth2Event.AuthorizationCodeAcquired -> acquireAccessToken(event) } as (
-                DataSourceEvent,
-            ) -> Unit,
+            handler = authorizationCodeHandler,
         )
     }
 

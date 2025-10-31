@@ -23,14 +23,17 @@ abstract class DataSource(
     protected val eventBus: IEventBus,
 ) : IDataSource {
     init {
-        @Suppress("UNCHECKED_CAST")
+        val preparationHandler: (DataSourceEvent) -> Unit = { event ->
+            if (event is DataCollectionPreparationEvent) {
+                prepareDataCollection(event)
+            }
+        }
+
         eventBus.subscribe(
             subscriber = this::class,
             eventType = DataCollectionPreparationEvent::class,
             dataSourceId = this.getId(),
-            handler = { event: DataCollectionPreparationEvent ->
-                prepareDataCollection(event)
-            } as (DataSourceEvent) -> Unit,
+            handler = preparationHandler,
         )
     }
 

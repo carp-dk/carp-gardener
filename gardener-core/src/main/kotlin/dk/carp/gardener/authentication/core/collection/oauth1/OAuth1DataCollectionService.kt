@@ -19,14 +19,16 @@ class OAuth1DataCollectionService(
     private val operator: IOAuth1DataCollectionOperatorBuilder,
 ) : DataCollectionService(eventBus, publisher, transformerRegistry) {
     init {
-        @Suppress("UNCHECKED_CAST")
+        val executionHandler: (IntegrationEvent) -> Unit = { event ->
+            if (event is DataCollectionExecutionEvent.OAuth1ExecutionEvent) {
+                executeDataCollectionRequest(event)
+            }
+        }
+
         eventBus.subscribe(
             subscriber = this::class,
             eventType = DataCollectionExecutionEvent.OAuth1ExecutionEvent::class,
-            handler =
-            { event: DataCollectionExecutionEvent.OAuth1ExecutionEvent ->
-                executeDataCollectionRequest(event)
-            } as (IntegrationEvent) -> Unit,
+            handler = executionHandler,
         )
     }
 

@@ -60,6 +60,11 @@ dependencies {
     // MongoDB Java driver
     implementation(libs.mongodb.driver.sync)
 
+    // CARP data stream core models
+    implementation("dk.cachet.carp.data:carp.data.core-jvm:1.2.0")
+    implementation("dk.cachet.carp.common:carp.common-jvm:1.2.0")
+    implementation(libs.kotlinx.serialization.json)
+
     // Test
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito.kotlin)
