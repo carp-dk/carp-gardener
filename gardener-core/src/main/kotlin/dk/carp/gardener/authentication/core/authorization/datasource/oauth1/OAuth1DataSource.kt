@@ -28,15 +28,17 @@ abstract class OAuth1DataSource(
     protected val authorizationOperator: IOAuth1AuthorizationOperator,
 ) : DataSource(accessParamsService, stateService, eventBus) {
     init {
-        @Suppress("UNCHECKED_CAST")
+        val authorizedTokenHandler: (DataSourceEvent) -> Unit = { event ->
+            if (event is OAuth1Event.AuthorizedTokenAcquired) {
+                acquireAccessToken(event)
+            }
+        }
+
         eventBus.subscribe(
             subscriber = this::class,
             eventType = OAuth1Event.AuthorizedTokenAcquired::class,
             dataSourceId = this.getId(),
-            handler =
-            { event: OAuth1Event.AuthorizedTokenAcquired -> acquireAccessToken(event) } as (
-                DataSourceEvent,
-            ) -> Unit,
+            handler = authorizedTokenHandler,
         )
     }
 
@@ -57,10 +59,10 @@ abstract class OAuth1DataSource(
                 userId = state.userId,
                 dataSourceId = state.dataSourceId,
                 requestToken =
-                OAuth1RequestToken(
-                    event.requestToken,
-                    state.tokenSecret,
-                ),
+                    OAuth1RequestToken(
+                        event.requestToken,
+                        state.tokenSecret,
+                    ),
                 verifier = event.tokenVerifier,
                 params = event.params,
             )
@@ -128,10 +130,10 @@ abstract class OAuth1DataSource(
         return authorizationOperator.getCompleteAuthorizationUrlForUser(
             stateId = state.id,
             requestToken =
-            OAuth1RequestToken(
-                state.requestToken,
-                state.tokenSecret,
-            ),
+                OAuth1RequestToken(
+                    state.requestToken,
+                    state.tokenSecret,
+                ),
             params = params,
         )
     }

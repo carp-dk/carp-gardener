@@ -18,6 +18,7 @@ mongodb = "5.1.2"
 kotlinx_coroutines = "1.9.0"
 # If you keep a native Netty for mac, pin it explicitly (or align to Vert.x BOM)
 netty = "4.1.67.Final"
+kotlinx_serialization_json = "1.7.3"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
@@ -51,6 +52,7 @@ detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", 
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines" }
 mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization_json" }
 
 
 [plugins]
