@@ -1,11 +1,8 @@
 package dk.carp.gardener.authentication.ktor
 
 import com.github.scribejava.core.builder.ServiceBuilder
-import com.mongodb.ConnectionString
-import com.mongodb.MongoClientSettings
-import com.mongodb.MongoCredential
-import com.mongodb.client.MongoClient
-import com.mongodb.client.MongoClients
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.AuthorizationStateServiceHost
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateRepository
 import dk.carp.gardener.authentication.core.authorization.authorizationstate.IAuthorizationStateService
@@ -37,12 +34,13 @@ import dk.carp.gardener.authentication.implementation.oauth2.OAuth2Operator
 import dk.carp.gardener.authentication.implementation.publisher.RabbitMqDataPublisher
 import dk.carp.gardener.authentication.implementation.repository.AdapterAccessParamsRepository
 import dk.carp.gardener.authentication.implementation.repository.AdapterAuthorizationStateRepository
-import dk.carp.gardener.authentication.implementation.repository.CoroutineMongoAccessParamsRepository
-import dk.carp.gardener.authentication.implementation.repository.CoroutineMongoAuthorizationStateRepository
+import dk.carp.gardener.authentication.implementation.repository.CoroutinePostgresAccessParamsRepository
+import dk.carp.gardener.authentication.implementation.repository.CoroutinePostgresAuthorizationStateRepository
 import dk.carp.gardener.authentication.implementation.transformer.withings.WithingsCarpTransformerI
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -62,22 +60,18 @@ fun main() {
 
     val eventBus: IEventBus = SingleThreadedEventBus()
 
-    logger.info(
-        "MongoDB connection establishment starting for ${properties.getProperty(
-            "mongo.db.connection_string",
-        )}/${properties.getProperty("mongo.db.name")}",
-    )
-    val mongoClient: MongoClient = createMongoClient(properties)
-    val mongoDatabaseName = properties.getProperty("mongo.db.name")
-    logger.info("MongoDB client successfully created for database '{}'.", mongoDatabaseName)
+    val postgresJdbcUrl = properties.getProperty("postgres.jdbc_url")
+    logger.info("Configuring PostgreSQL connection using '{}'.", postgresJdbcUrl)
+    val dataSource = createDataSource(properties, postgresJdbcUrl)
+    logger.info("PostgreSQL data source successfully initialized.")
 
     val authorizationStateRepository: IAuthorizationStateRepository =
-        AdapterAuthorizationStateRepository(CoroutineMongoAuthorizationStateRepository(mongoClient, mongoDatabaseName))
+        AdapterAuthorizationStateRepository(CoroutinePostgresAuthorizationStateRepository(dataSource))
     val authorizationStateService: IAuthorizationStateService =
         AuthorizationStateServiceHost(authorizationStateRepository)
 
     val accessParamsRepository: IAccessParamsRepository =
-        AdapterAccessParamsRepository(CoroutineMongoAccessParamsRepository(mongoClient, mongoDatabaseName))
+        AdapterAccessParamsRepository(CoroutinePostgresAccessParamsRepository(dataSource))
     val accessParamService: IAccessParamsService = AccessParamsServiceHost(accessParamsRepository)
     val dataSourceRegistry: IDataSourceRegistry = DataSourceRegistryHost(eventBus)
 
@@ -233,6 +227,11 @@ fun main() {
         logAuthorizationSamples(webServerPort, properties, logger)
     }
 
+    server.environment.monitor.subscribe(ApplicationStopping) {
+        logger.info("Ktor server stopping; closing PostgreSQL data source.")
+        dataSource.close()
+    }
+
     server.start(wait = true)
 }
 
@@ -240,24 +239,20 @@ fun Application.module() {
     // empty - reserved for Ktor test tooling
 }
 
-private fun createMongoClient(properties: PropertiesConfig): MongoClient {
-    val connectionString = properties.getProperty("mongo.db.connection_string")
-    val username = properties.getOptionalProperty("mongo.db.username")
-    val password = properties.getOptionalProperty("mongo.db.password")
-    val database = properties.getProperty("mongo.db.name")
-
-    if (username.isNullOrBlank() || password.isNullOrBlank()) {
-        return MongoClients.create(connectionString)
-    }
-
-    val credential = MongoCredential.createCredential(username, database, password.toCharArray())
-    val settings =
-        MongoClientSettings
-            .builder()
-            .applyConnectionString(ConnectionString(connectionString))
-            .credential(credential)
-            .build()
-    return MongoClients.create(settings)
+private fun createDataSource(
+    properties: PropertiesConfig,
+    jdbcUrl: String,
+): HikariDataSource {
+    val config =
+        HikariConfig().apply {
+            this.jdbcUrl = jdbcUrl
+            properties.getOptionalProperty("postgres.username")?.takeIf { it.isNotBlank() }?.let { username = it }
+            properties.getOptionalProperty("postgres.password")?.takeIf { it.isNotBlank() }?.let { password = it }
+            properties.getOptionalProperty("postgres.pool.max_size")?.toIntOrNull()?.let { maximumPoolSize = it }
+            properties.getOptionalProperty("postgres.pool.min_idle")?.toIntOrNull()?.let { minimumIdle = it }
+            properties.getOptionalProperty("postgres.connection_timeout_ms")?.toLongOrNull()?.let { connectionTimeout = it }
+        }
+    return HikariDataSource(config)
 }
 
 @Suppress("LongParameterList")

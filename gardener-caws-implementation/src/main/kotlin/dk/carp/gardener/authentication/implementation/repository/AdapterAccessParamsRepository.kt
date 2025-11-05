@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
  * to a coroutine-based implementation. Uses `runBlocking` on the IO dispatcher to bridge.
  */
 class AdapterAccessParamsRepository(
-    private val coroutineRepo: CoroutineMongoAccessParamsRepository,
+    private val coroutineRepo: CoroutinePostgresAccessParamsRepository,
 ) : IAccessParamsRepository {
     override fun upsert(params: AccessParams) {
         runBlocking {

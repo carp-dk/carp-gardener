@@ -57,8 +57,9 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
 
-    // MongoDB Java driver
-    implementation(libs.mongodb.driver.sync)
+    // Database
+    implementation(libs.hikari)
+    implementation(libs.postgresql)
 
     // CARP data stream core models
     implementation("dk.cachet.carp.data:carp.data.core-jvm:1.2.0")

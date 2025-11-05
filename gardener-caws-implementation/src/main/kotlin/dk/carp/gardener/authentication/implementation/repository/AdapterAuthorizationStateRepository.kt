@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
  * to a coroutine-based implementation. Uses `runBlocking` on the IO dispatcher to bridge.
  */
 class AdapterAuthorizationStateRepository(
-    private val coroutineRepo: CoroutineMongoAuthorizationStateRepository,
+    private val coroutineRepo: CoroutinePostgresAuthorizationStateRepository,
 ) : IAuthorizationStateRepository {
     override fun findById(id: String): AuthorizationState? =
         runBlocking {

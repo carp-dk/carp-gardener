@@ -11,10 +11,10 @@
   "rabbitmq.exchange.name": "third-party-direct-exchange-development",
   "rabbitmq.queue.name": "third-party-queue-development",
 
-  "mongo.db.connection_string": "mongodb://carp-mongo:27017",
-  "mongo.db.name": "integration-db",
-  "mongo.db.username": "",
-  "mongo.db.password": "",
+  "postgres.jdbc_url": "jdbc:postgresql://postgres:5432/gardener",
+  "postgres.username": "",
+  "postgres.password": "",
+  "postgres.pool.max_size": 10,
 
   "fitbit.client.id": "",
   "fitbit.client.secret": "",
