@@ -4,7 +4,7 @@ services:
 
   ## Application service
   carp-wearables-service:
-    container_name: carp-wearables-service
+    container_name: carp-wearables-service-${PROFILE:-local}
     build:
       context: ../..
       dockerfile: ../docker/Dockerfile
@@ -13,16 +13,16 @@ services:
     expose:
       - 8444
     environment:
-      - profile=prod
+      - profile=${PROFILE:-local}
     networks:
       - cans
     depends_on:
       - rabbitmq-common
-      - carp-mongo
+      - postgres
 
   # Common RabbitMQ
   rabbitmq-common:
-    container_name: carp-rabbitmq-common
+    container_name: carp-rabbitmq-${PROFILE:-local}
     hostname: rabbitmq-common
     image: rabbitmq:4-management
     ports:
@@ -30,7 +30,7 @@ services:
       - 15673:15672
       - 15693:15692
     volumes:
-      - rabbitmq_common:/var/lib/rabbitmq/data
+      - rabbitmq_data:/var/lib/rabbitmq/data
       - ./config/rabbit/definitions.json:/etc/rabbitmq/definitions.json
       - ./config/rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./config/rabbit/enabled_plugins:/etc/rabbitmq/enabled_plugins
@@ -38,22 +38,18 @@ services:
       - cans
     restart: unless-stopped
 
-  # MongoDB
-  carp-mongo:
-    container_name: carp-mongo
-    image: mongo:6.0
+  # PostgreSQL
+  postgres:
+    container_name: carp-postgres-${PROFILE:-local}
+    image: postgres:16
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: integration-db
-      MONGODB_USER: admin
-      MONGODB_DATABASE: integration-db
-      MONGODB_PASS: admin
+      POSTGRES_DB: ${POSTGRES_DB:-gardener}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
-      - 27017:27017
+      - 5432:5432
     volumes:
-      - ./config/mongo/init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - cans
     restart: unless-stopped
@@ -63,5 +59,7 @@ networks:
     driver: bridge
 
 volumes:
-  mongodb_data:
-  rabbitmq_common:
+  postgres_data:
+    name: carp_postgres_data_${PROFILE:-local}
+  rabbitmq_data:
+    name: carp_rabbitmq_data_${PROFILE:-local}
