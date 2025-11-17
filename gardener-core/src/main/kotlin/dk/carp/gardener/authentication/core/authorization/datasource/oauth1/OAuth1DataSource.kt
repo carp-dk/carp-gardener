@@ -59,10 +59,10 @@ abstract class OAuth1DataSource(
                 userId = state.userId,
                 dataSourceId = state.dataSourceId,
                 requestToken =
-                    OAuth1RequestToken(
-                        event.requestToken,
-                        state.tokenSecret,
-                    ),
+                OAuth1RequestToken(
+                    event.requestToken,
+                    state.tokenSecret,
+                ),
                 verifier = event.tokenVerifier,
                 params = event.params,
             )
@@ -130,10 +130,10 @@ abstract class OAuth1DataSource(
         return authorizationOperator.getCompleteAuthorizationUrlForUser(
             stateId = state.id,
             requestToken =
-                OAuth1RequestToken(
-                    state.requestToken,
-                    state.tokenSecret,
-                ),
+            OAuth1RequestToken(
+                state.requestToken,
+                state.tokenSecret,
+            ),
             params = params,
         )
     }

@@ -22,6 +22,24 @@ The `IDataPublisher` interface is implemented using
 third-party services is transformed into the CARP _data point_ format
 and published to the configured RabbitMQ queue.
 
+### Consuming the published messages
+
+A small RabbitMQ client is bundled in `caws-implementation` so you can verify the payloads that
+reach the queue. It reuses the same configuration loader as the main service and only needs the RabbitMQ
+connection details that are already present in `conf/config-<profile>.json`.
+
+```sh
+# From the repository root (uses the `profile` env variable, defaults to `local`)
+./gradlew :caws-implementation:runRabbitSubscriber
+```
+
+The subscriber connects to `rabbitmq.host`/`rabbitmq.port`, listens on `rabbitmq.queue.name`, and logs every
+payload it receives until you stop it with `Ctrl+C`.
+
+> The RabbitMQ integration tests under `gardener-caws-implementation` reuse the locally running broker (the same one
+> started via `docker compose -f docker/docker-compose.yml up`). Ensure that container is running before executing
+> `./gradlew :gardener-caws-implementation:test --tests '*RabbitMqMessagingIntegrationTest*'`.
+
 As every required dependency is resolved the application is functional.
 It is designed to run as its own microservice using the [Ktor](https://ktor.io/) server stack and is fully containerized using
 [Docker](https://www.docker.com/). PostgreSQL and RabbitMQ instances are also

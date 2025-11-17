@@ -6,9 +6,9 @@
 
   "rabbitmq.host": "localhost",
   "rabbitmq.port": 5672,
-  "rabbitmq.username": "",
-  "rabbitmq.password": "",
-  "rabbitmq.exchange.name": "third-party-direct-exchange-local",
+  "rabbitmq.username": "carp_admin",
+  "rabbitmq.password": "carp_admin",
+  "rabbitmq.exchange.name": "third-party-direct-exchange",
   "rabbitmq.queue.name": "third-party-queue",
 
   "postgres.jdbc_url": "jdbc:postgresql://localhost:5432/gardener",

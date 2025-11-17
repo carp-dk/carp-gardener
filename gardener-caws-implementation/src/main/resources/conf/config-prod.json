@@ -8,8 +8,8 @@
   "rabbitmq.port": 5672,
   "rabbitmq.username": "",
   "rabbitmq.password": "",
-  "rabbitmq.exchange.name": "third-party-direct-exchange-development",
-  "rabbitmq.queue.name": "third-party-queue-development",
+  "rabbitmq.exchange.name": "third-party-direct-exchange",
+  "rabbitmq.queue.name": "third-party-queue",
 
   "postgres.jdbc_url": "jdbc:postgresql://postgres:5432/gardener",
   "postgres.username": "",

@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
@@ -80,4 +81,12 @@ tasks.withType<ShadowJar> {
 tasks.withType<Test> {
     useJUnitPlatform()
     testLogging { events = setOf(PASSED, SKIPPED, FAILED) }
+}
+
+tasks.register<JavaExec>("runRabbitSubscriber") {
+    group = "application"
+    description = "Runs the minimal RabbitMQ subscriber client."
+    mainClass.set("dk.carp.gardener.authentication.implementation.subscriber.RabbitMqDataSubscriberKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    standardInput = System.`in`
 }

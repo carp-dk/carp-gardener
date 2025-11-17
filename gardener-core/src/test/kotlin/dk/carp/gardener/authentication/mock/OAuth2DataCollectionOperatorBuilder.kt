@@ -22,7 +22,9 @@ class OAuth2DataCollectionOperatorBuilder(
     private val dexcomEgvsData: JsonNode,
 ) : IOAuth2DataCollectionOperatorBuilder {
     @Suppress("UnusedParameter", "ParameterListWrapping")
-    override fun createDataCollectionOperatorWithClientSettings(clientSettings: OAuth2ClientSettings): IDataCollectionOperator =
+    override fun createDataCollectionOperatorWithClientSettings(
+        clientSettings: OAuth2ClientSettings
+    ): IDataCollectionOperator =
         OAuth2Operator(
             stateService = stateService,
             accessParamsService = accessParamsService,

@@ -107,6 +107,9 @@ private object EnvOverridesLoader {
                     val rawKey = trimmed.substring(0, separatorIndex).trim()
                     var rawValue = trimmed.substring(separatorIndex + 1).trim().stripWrappingQuotes()
 
+                    if (rawValue.isEmpty()) {
+                        return@forEach
+                    }
                     val normalizedKey = normalizeKey(rawKey) ?: return@forEach
                     overrides.putIfAbsent(normalizedKey, rawValue)
                 }
