@@ -25,7 +25,7 @@ import java.time.Instant
  */
 class CarpDataStreamBuilder private constructor() {
     companion object {
-        private const val DEFAULT_DEVICE_ROLE_NAME = "Patient's wearables"
+        private const val DEFAULT_DEVICE_ROLE_NAME = "Wearables"
         private const val DEFAULT_FIRST_SEQUENCE_ID = 0L
         private const val DEFAULT_TRIGGER_ID = 0
 
@@ -49,16 +49,15 @@ class CarpDataStreamBuilder private constructor() {
             thirdPartyData: ThirdPartyData,
             payloads: List<JsonNode>,
         ): DataStreamServiceRequest.AppendToDataStreams {
-            val studyDeploymentId =
-                thirdPartyData.applicationData?.let(::UUID)
-                    ?: throw IllegalArgumentException("Missing study deployment id in application data.")
+            val applicationContext = parseApplicationContext(thirdPartyData.applicationData)
+            val studyDeploymentId = applicationContext.deploymentId.let(::UUID)
             val dataTypeValue = thirdPartyData.dataIdentifier.getNamespace()
             val dataType = parseNamespacedId(dataTypeValue)
 
             val dataStreamId =
                 DataStreamId(
                     studyDeploymentId = studyDeploymentId,
-                    deviceRoleName = DEFAULT_DEVICE_ROLE_NAME,
+                    deviceRoleName = applicationContext.deviceRoleName ?: DEFAULT_DEVICE_ROLE_NAME,
                     dataType = dataType,
                 )
             val sequence =
@@ -137,5 +136,29 @@ class CarpDataStreamBuilder private constructor() {
             val name = identifier.substring(delimiterIndex + 1)
             return NamespacedId(namespace, name)
         }
+
+        private fun parseApplicationContext(rawApplicationData: String?): ApplicationContext {
+            require(!rawApplicationData.isNullOrBlank()) {
+                "Missing study deployment id in application data."
+            }
+
+            val mapper = ConfiguredObjectMapper.instance
+            val parsedNode =
+                runCatching { mapper.readTree(rawApplicationData) }
+                    .getOrNull()
+
+            if (parsedNode != null && parsedNode.hasNonNull("deploymentId")) {
+                val deploymentId = parsedNode.get("deploymentId").asText()
+                val deviceRoleName = parsedNode.get("deviceRoleName")?.asText()
+                return ApplicationContext(deploymentId, deviceRoleName)
+            }
+
+            return ApplicationContext(rawApplicationData, null)
+        }
+
+        private data class ApplicationContext(
+            val deploymentId: String,
+            val deviceRoleName: String?,
+        )
     }
 }

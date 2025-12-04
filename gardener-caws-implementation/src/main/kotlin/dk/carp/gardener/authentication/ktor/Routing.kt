@@ -8,6 +8,7 @@ import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitD
 import dk.carp.gardener.authentication.core.common.events.eventbus.IEventBus
 import dk.carp.gardener.authentication.core.common.events.oauth1.OAuth1Event
 import dk.carp.gardener.authentication.core.common.events.oauth2.OAuth2Event
+import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
@@ -31,6 +32,8 @@ fun Application.configureRouting(
             val dataSourceId = call.parameters["dataSourceId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val userId = call.parameters["userId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val deploymentId = call.request.queryParameters["deploymentId"]
+            val deviceRoleName = call.request.queryParameters["deviceRoleName"]
+            val applicationData = buildApplicationData(deploymentId, deviceRoleName)
             logger.info("Authorization request initiated for {}/{}", dataSourceId, userId)
 
             val dataSource = dataSourceRegistry.getDataSourceById(dataSourceId)
@@ -39,12 +42,12 @@ fun Application.configureRouting(
                     val scopes = call.request.queryParameters["scopes"] ?: ""
                     val parsedScopes = if (scopes.isBlank()) emptyList() else scopes.split(",")
                     val params = dataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams
-                    params.applicationData = deploymentId
+                    params.applicationData = applicationData
                     params.scopes.addAll(parsedScopes)
                     dataSource.initiateUserAuthorization(userId, dataSourceId, params)
                 } else {
                     val params = dataSource.getEstablishedAuthorizationRequestParams() as OAuth1AuthorizationRequestParams
-                    params.applicationData = deploymentId
+                    params.applicationData = applicationData
                     dataSource.initiateUserAuthorization(userId, dataSourceId, params)
                 }
 
@@ -129,4 +132,20 @@ fun Application.configureRouting(
             }
         }
     }
+}
+
+private fun buildApplicationData(
+    deploymentId: String?,
+    deviceRoleName: String?,
+): String? {
+    if (deploymentId.isNullOrBlank()) return null
+    val mapper = ConfiguredObjectMapper.instance
+    val node =
+        mapper.createObjectNode().apply {
+            put("deploymentId", deploymentId)
+            if (!deviceRoleName.isNullOrBlank()) {
+                put("deviceRoleName", deviceRoleName)
+            }
+        }
+    return mapper.writeValueAsString(node)
 }

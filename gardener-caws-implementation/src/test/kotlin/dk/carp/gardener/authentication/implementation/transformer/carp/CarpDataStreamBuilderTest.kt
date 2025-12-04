@@ -85,4 +85,38 @@ class CarpDataStreamBuilderTest {
         assertEquals(1, actual.size)
         assertIterableEquals(expected, actual)
     }
+
+    @Test
+    fun `uses device role name from application data when provided`() {
+        val rawJson =
+            """
+            {
+              "body": { "activities": [] },
+              "status": 0
+            }
+            """.trimIndent()
+        val rawNode = mapper.readTree(rawJson)
+        val deploymentId = "a866a1f2-953e-45bb-80ab-18fb1a380bb9"
+        val deviceRoleName = "Custom wearables"
+        val applicationData =
+            mapper.createObjectNode().apply {
+                put("deploymentId", deploymentId)
+                put("deviceRoleName", deviceRoleName)
+            }.toString()
+        val thirdPartyData =
+            ThirdPartyData(
+                userId = "internal-user",
+                dataSourceId = WithingsDataSource.DATA_SOURCE_ID,
+                dataIdentifier = WithingsDataCollectionType.DAILY_ACTIVITY,
+                rawResponse = rawNode,
+                applicationData = applicationData,
+                collectedAt = Instant.EPOCH,
+            )
+
+        val actual = CarpDataStreamBuilder.fromThirdPartyData(thirdPartyData)
+        val node = actual.single()
+        val deviceRole = node.path("batch").first().path("dataStream").path("deviceRoleName").textValue()
+
+        assertEquals(deviceRoleName, deviceRole)
+    }
 }
