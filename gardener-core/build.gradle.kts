@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dk.cachet.carp.gardener" // ← set your real group
-version = "1.0.0-SNAPSHOT"
+version = "1.1.0"
 
 java {
     toolchain {
