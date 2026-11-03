@@ -65,7 +65,7 @@ class WithingsCarpTransformerITest {
                 .single()
 
         assertEquals(studyDeploymentId, request.studyDeploymentId.stringRepresentation)
-        assertEquals("Patient's wearables", sequence.dataStream.deviceRoleName)
+        assertEquals("Wearables", sequence.dataStream.deviceRoleName)
         assertEquals("com.withings.daily_activity", sequence.dataStream.dataType.toString())
         assertEquals(listOf(0), sequence.triggerIds)
         assertEquals(0L, sequence.firstSequenceId)
