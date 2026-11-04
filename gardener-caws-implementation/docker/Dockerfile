@@ -1,4 +1,4 @@
-FROM gradle:8.12-jdk21 AS builder
+FROM gradle:9.8.2-jdk21 AS builder
 COPY ./ /src
 USER root
 WORKDIR /src

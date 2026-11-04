@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.0.21"
 junit = "5.11.4"
-shadow = "8.0.0"
+shadow = "9.6.1"
 slf4j = "2.0.17"
 logback = "1.5.13"
 jackson = "2.20.0"
@@ -37,7 +37,9 @@ netty-osx    = { module = "io.netty:netty-resolver-dns-native-macos", version.re
 kotlin-stdlib  = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 mockito-kotlin        = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 
@@ -60,7 +62,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 [plugins]
 kotlin-jvm            = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization  = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-shadow                = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow                = { id = "com.gradleup.shadow", version.ref = "shadow" }
 application           = { id = "application" }  # core plugin, no version
 
 detekt                = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

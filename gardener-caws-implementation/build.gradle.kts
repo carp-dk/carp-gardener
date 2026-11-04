@@ -68,7 +68,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Test
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.mockito.kotlin)
 }
 
