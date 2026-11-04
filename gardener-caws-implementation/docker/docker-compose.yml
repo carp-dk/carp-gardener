@@ -54,7 +54,7 @@ services:
   # PostgreSQL
   postgres:
     container_name: carp-postgres-${PROFILE:-local}
-    image: postgres:16
+    image: postgres:17
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-gardener}
       POSTGRES_USER: ${POSTGRES_USER:-admin}
