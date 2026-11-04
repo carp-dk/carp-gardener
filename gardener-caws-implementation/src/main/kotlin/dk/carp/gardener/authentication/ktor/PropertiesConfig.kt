@@ -81,6 +81,7 @@ private object EnvOverridesLoader {
 
     private fun loadFromSystemEnv(): Map<String, String> =
         System.getenv()
+            .filterValues { it.isNotBlank() }
             .mapNotNull { (key, value) -> normalizeKey(key)?.let { it to value } }
             .toMap()
 
