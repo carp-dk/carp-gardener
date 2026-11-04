@@ -222,12 +222,12 @@ fun main() {
             configureRouting(dataSourceRegistry, eventBus, properties, logger)
         }
 
-    server.environment.monitor.subscribe(ApplicationStarted) {
+    server.monitor.subscribe(ApplicationStarted) {
         logger.info("Ktor server started on port {}", webServerPort)
         logAuthorizationSamples(webServerPort, properties, logger)
     }
 
-    server.environment.monitor.subscribe(ApplicationStopping) {
+    server.monitor.subscribe(ApplicationStopping) {
         logger.info("Ktor server stopping; closing PostgreSQL data source.")
         dataSource.close()
     }

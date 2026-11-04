@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.21"
+kotlin = "2.4.21"
 junit = "5.11.4"
 shadow = "9.6.1"
 slf4j = "2.0.17"
@@ -7,7 +7,7 @@ logback = "1.5.13"
 jackson = "2.20.0"
 mockitoKotlin = "5.4.0"
 detekt = "1.23.8"
-ktlintGradle = "13.1.0"
+ktlintGradle = "14.2.0"
 
 ktor = "3.0.3"
 

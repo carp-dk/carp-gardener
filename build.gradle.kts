@@ -30,8 +30,9 @@ subprojects {
             }
         }
 
-        // Force Kotlin runtime artifacts to a single version to avoid mixed-Kotlin classpath issues
-        configurations.configureEach {
+        // Force Kotlin runtime artifacts to a single version to avoid mixed-Kotlin classpath issues.
+        // Detekt and ktlint configurations are skipped: they must run with the Kotlin version they were compiled against.
+        configurations.matching { !it.name.startsWith("detekt") && !it.name.startsWith("ktlint") }.configureEach {
             resolutionStrategy.eachDependency {
                 if (requested.group == "org.jetbrains.kotlin") {
                     useVersion(libs.versions.kotlin.get())
