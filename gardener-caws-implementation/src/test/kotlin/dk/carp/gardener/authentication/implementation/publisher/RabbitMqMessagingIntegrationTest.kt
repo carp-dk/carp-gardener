@@ -104,9 +104,9 @@ class RabbitMqMessagingIntegrationTest {
     }
 
     private fun ensureTopologyExists() {
-        withChannel { channel ->
-            channel.exchangeDeclarePassive(config.getProperty("rabbitmq.exchange.name"))
-            channel.queueDeclarePassive(config.getProperty("rabbitmq.queue.name"))
+        connectionFactory.newConnection().use { connection ->
+            RabbitMqTopology(config.getProperty("rabbitmq.exchange.name"), config.getProperty("rabbitmq.queue.name"))
+                .ensure(connection)
         }
     }
 

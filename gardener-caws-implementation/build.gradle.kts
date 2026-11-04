@@ -82,6 +82,8 @@ tasks.withType<ShadowJar> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Tests use the test profile so they never touch the queues of a running local stack.
+    environment("profile", "test")
     testLogging { events = setOf(PASSED, SKIPPED, FAILED) }
 }
 

@@ -43,6 +43,10 @@ class RabbitMqDataPublisher(
         LOGGER.info("RabbitMQ connection establishment starting for ${factory.host}:${factory.port}")
         connection = factory.newConnection()
         channel = connection.createChannel()
+        RabbitMqTopology(
+            properties.getProperty("rabbitmq.exchange.name"),
+            properties.getProperty("rabbitmq.queue.name"),
+        ).ensure(connection)
     }
 
     /**

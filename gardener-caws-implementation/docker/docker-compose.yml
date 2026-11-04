@@ -1,6 +1,7 @@
 services:
 
   ## Application service
+  # PostgreSQL and RabbitMQ are shared with the carp-webservices stack, which must be running first.
   carp-wearables-service:
     container_name: carp-wearables-service-${PROFILE:-local}
     build:
@@ -15,69 +16,21 @@ services:
       - 8444
     environment:
       - profile=${PROFILE:-local}
-      - RABBITMQ__HOST=rabbitmq-common
-      - RABBITMQ__PORT=5672
-      - POSTGRES__JDBC_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-gardener}
+      # Gardener keeps its tables in its own schema and creates its exchange/queue if they are missing.
+      - POSTGRES__JDBC_URL=jdbc:postgresql://carp-postgres-${PROFILE:-local}:5432/${POSTGRES_DB:-gardener}
       - POSTGRES__USERNAME=${POSTGRES_USER:-admin}
       - POSTGRES__PASSWORD=${POSTGRES_PASSWORD:-admin}
+      - RABBITMQ__HOST=carp-rabbitmq-${PROFILE:-local}
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__USERNAME=${RABBITMQ_USER:-admin}
+      - RABBITMQ__PASSWORD=${RABBITMQ_PASSWORD:-admin}
     networks:
-      - cans
-    depends_on:
-      rabbitmq-common:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-
-  # Common RabbitMQ
-  rabbitmq-common:
-    container_name: carp-rabbitmq-${PROFILE:-local}
-    hostname: rabbitmq-common
-    image: rabbitmq:4-management
-    ports:
-      - 5673:5672
-      - 15673:15672
-      - 15693:15692
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq/data
-      - ./config/rabbit/definitions.json:/etc/rabbitmq/definitions.json
-      - ./config/rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./config/rabbit/enabled_plugins:/etc/rabbitmq/enabled_plugins
-    networks:
-      - cans
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
-      timeout: 10s
-      retries: 12
-    restart: unless-stopped
-
-  # PostgreSQL
-  postgres:
-    container_name: carp-postgres-${PROFILE:-local}
-    image: postgres:17
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-gardener}
-      POSTGRES_USER: ${POSTGRES_USER:-admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
-    ports:
-      - 5432:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - cans
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
+      - carp
+    # The shared services live in another Compose project, so startup order can't be enforced; retry instead.
     restart: unless-stopped
 
 networks:
-  cans:
-    driver: bridge
-
-volumes:
-  postgres_data:
-    name: carp_postgres_data_${PROFILE:-local}
-  rabbitmq_data:
-    name: carp_rabbitmq_data_${PROFILE:-local}
+  # Created by the carp-webservices stack.
+  carp:
+    external: true
+    name: carp-${PROFILE:-local}

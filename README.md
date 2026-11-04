@@ -15,7 +15,8 @@ CARP Gardener collects wearable activity and health data from third-party servic
 
 ## Prerequisites
 - JDK 21 (the Gradle wrapper configures toolchains automatically).
-- Docker + Docker Compose if you want the bundled PostgreSQL/RabbitMQ stack.
+- Docker + Docker Compose if you want to run the service in a container.
+- The carp-webservices stack running: Gardener shares its PostgreSQL and RabbitMQ (containers `carp-postgres-<profile>` and `carp-rabbitmq-<profile>` on network `carp-<profile>`).
 - OAuth credentials for the vendors you plan to enable (fill them into `gardener-caws-implementation/.env`).
 
 ## Build and test
@@ -27,14 +28,14 @@ Run the Gradle wrapper from the repository root:
 ```
 
 ## Run the CARP implementation
-- **With Docker Compose (full stack)**  
+- **With Docker Compose**  
   1) Copy the sample env file: `cp gardener-caws-implementation/_.local.env gardener-caws-implementation/.env` and add your secrets.  
   2) Start the stack:  
   `docker compose -f gardener-caws-implementation/docker/docker-compose.yml --env-file gardener-caws-implementation/.env up --build`  
-  This brings up PostgreSQL, RabbitMQ, and the service on port `8444` (RabbitMQ UI on `15673`).
+  This starts the service on port `8444`. It connects to the shared PostgreSQL and RabbitMQ of the carp-webservices stack, which must already be running; `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `RABBITMQ_USER` and `RABBITMQ_PASSWORD` in `.env` select the database and credentials (defaults `gardener` and `admin` / `admin`). Gardener's tables, exchange and queue are created on first start if missing.
 
-- **Locally with Gradle (reuse external Postgres/RabbitMQ)**  
-  Ensure the dependencies are reachable (the Compose stack above works). Keep the `.env` file in `gardener-caws-implementation/` for overrides. Then run:  
+- **Locally with Gradle**  
+  Ensure the carp-webservices stack is running (its PostgreSQL and RabbitMQ are published on `localhost`). Keep the `.env` file in `gardener-caws-implementation/` for overrides. Then run:  
   `cd gardener-caws-implementation && profile=local ../gradlew :caws-implementation:run`  
   Configuration is loaded from `conf/config-<profile>.json` with environment variables (or `.env`) overriding the defaults.
 

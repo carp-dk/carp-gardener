@@ -36,15 +36,15 @@ connection details that are already present in `conf/config-<profile>.json`.
 The subscriber connects to `rabbitmq.host`/`rabbitmq.port`, listens on `rabbitmq.queue.name`, and logs every
 payload it receives until you stop it with `Ctrl+C`.
 
-> The RabbitMQ integration tests under `gardener-caws-implementation` reuse the locally running broker (the same one
-> started via `docker compose -f docker/docker-compose.yml up`). Ensure that container is running before executing
-> `./gradlew :gardener-caws-implementation:test --tests '*RabbitMqMessagingIntegrationTest*'`.
+> The RabbitMQ integration tests under `gardener-caws-implementation` reuse the locally running broker of the
+> carp-webservices stack and are skipped when it is not reachable. Tests run with the `test` profile, so they only
+> touch `third-party-queue-test`, never the queue of the `local` stack:
+> `./gradlew :caws-implementation:test --tests '*RabbitMqMessagingIntegrationTest*'`.
 
 As every required dependency is resolved the application is functional.
 It is designed to run as its own microservice using the [Ktor](https://ktor.io/) server stack and is fully containerized using
-[Docker](https://www.docker.com/). PostgreSQL and RabbitMQ instances are also
-deployed in Docker containers and the application is configured to connect
-to them over a Docker network. The following deployment diagram displays
+[Docker](https://www.docker.com/). PostgreSQL and RabbitMQ are shared with the
+carp-webservices stack; the application connects to both over its Docker network. The following deployment diagram displays
 how the containers are connected.
 
 ![IMPL-DEPLY](deployment_component.png)
@@ -62,8 +62,18 @@ deployment. To set the desired profile, set the environment variable
 The _docker_ folder contains a single Docker Compose file that reads its
 profile and database credentials from the repository `.env`. Adjust the
 `PROFILE`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` entries as needed before
-starting the stack; Compose will provision PostgreSQL and RabbitMQ alongside
-the application.
+starting the stack. Compose only starts the application; it reuses the
+PostgreSQL and RabbitMQ containers of the carp-webservices stack
+(`carp-postgres-<profile>` and `carp-rabbitmq-<profile>`, reached over its
+external `carp-<profile>` network), so that stack must be running first.
+`POSTGRES_USER`/`POSTGRES_PASSWORD` and `RABBITMQ_USER`/`RABBITMQ_PASSWORD`
+are the credentials of those shared services (default `admin`/`admin`).
+
+Following the carp-webservices naming, Gardener publishes to the direct exchange
+`third-party-direct-exchange-<profile>`, routed to the queue
+`third-party-queue-<profile>` (dead letters go to `<queue>.dlx` / `<queue>.dlq`).
+On startup it creates whichever of these are missing and uses existing ones as
+they are.
 
 On startup the service prepares PostgreSQL itself, so no manual setup is
 needed. It connects to the database named in `postgres.jdbc_url` and creates
@@ -82,8 +92,8 @@ docker compose -f docker/docker-compose.yml up
 ```
 
 The active profile is controlled by the `PROFILE` value in `.env`; the default
-`local` profile runs the service together with PostgreSQL and RabbitMQ on the
-host ports `8444` and `5432`.
+`local` profile runs the service on host port `8444`, using the shared
+PostgreSQL and RabbitMQ of the carp-webservices stack.
 
 ## API documentation
 
