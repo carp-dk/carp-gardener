@@ -1,5 +1,7 @@
 -- PostgreSQL schema for the Gardener authentication service.
 -- Captures authorization state snapshots and provider access parameters.
+-- Applied on startup by PostgresDatabaseInitializer inside the configured schema
+-- (`postgres.schema`); every statement must stay idempotent.
 
 CREATE TABLE IF NOT EXISTS authorization_states (
     id uuid PRIMARY KEY,

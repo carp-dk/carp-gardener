@@ -42,7 +42,7 @@ Run the Gradle wrapper from the repository root:
 - docs/core_readme.md – core framework architecture and extension hooks.
 - docs/impl_readme.md – deployment architecture and RabbitMQ consumer helper.
 - docs/ktor-routing.md – HTTP endpoints exposed by the CARP implementation.
-- docs/postgres-schema.sql – database schema used by the implementation.
+- gardener-caws-implementation/src/main/resources/db/postgres-schema.sql – database schema, applied automatically on startup.
 
 ## License
 MIT License. See LICENSE for details.

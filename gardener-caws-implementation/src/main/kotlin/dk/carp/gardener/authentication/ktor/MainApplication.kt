@@ -36,6 +36,7 @@ import dk.carp.gardener.authentication.implementation.repository.AdapterAccessPa
 import dk.carp.gardener.authentication.implementation.repository.AdapterAuthorizationStateRepository
 import dk.carp.gardener.authentication.implementation.repository.CoroutinePostgresAccessParamsRepository
 import dk.carp.gardener.authentication.implementation.repository.CoroutinePostgresAuthorizationStateRepository
+import dk.carp.gardener.authentication.implementation.repository.PostgresDatabaseInitializer
 import dk.carp.gardener.authentication.implementation.transformer.withings.WithingsCarpTransformerI
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
@@ -61,8 +62,15 @@ fun main() {
     val eventBus: IEventBus = SingleThreadedEventBus()
 
     val postgresJdbcUrl = properties.getProperty("postgres.jdbc_url")
-    logger.info("Configuring PostgreSQL connection using '{}'.", postgresJdbcUrl)
-    val dataSource = createDataSource(properties, postgresJdbcUrl)
+    val postgresSchema =
+        properties.getOptionalProperty("postgres.schema")?.takeIf { it.isNotBlank() } ?: DEFAULT_POSTGRES_SCHEMA
+    logger.info("Configuring PostgreSQL connection using '{}' (schema '{}').", postgresJdbcUrl, postgresSchema)
+    val dataSourceConfig = createDataSourceConfig(properties, postgresJdbcUrl, postgresSchema)
+    val databaseInitializer =
+        PostgresDatabaseInitializer(postgresJdbcUrl, dataSourceConfig.username, dataSourceConfig.password, postgresSchema)
+    databaseInitializer.ensureDatabaseExists()
+    val dataSource = HikariDataSource(dataSourceConfig)
+    databaseInitializer.ensureTables(dataSource)
     logger.info("PostgreSQL data source successfully initialized.")
 
     val authorizationStateRepository: IAuthorizationStateRepository =
@@ -239,21 +247,22 @@ fun Application.module() {
     // empty - reserved for Ktor test tooling
 }
 
-private fun createDataSource(
+private const val DEFAULT_POSTGRES_SCHEMA = "gardener"
+
+private fun createDataSourceConfig(
     properties: PropertiesConfig,
     jdbcUrl: String,
-): HikariDataSource {
-    val config =
-        HikariConfig().apply {
-            this.jdbcUrl = jdbcUrl
-            properties.getOptionalProperty("postgres.username")?.takeIf { it.isNotBlank() }?.let { username = it }
-            properties.getOptionalProperty("postgres.password")?.takeIf { it.isNotBlank() }?.let { password = it }
-            properties.getOptionalProperty("postgres.pool.max_size")?.toIntOrNull()?.let { maximumPoolSize = it }
-            properties.getOptionalProperty("postgres.pool.min_idle")?.toIntOrNull()?.let { minimumIdle = it }
-            properties.getOptionalProperty("postgres.connection_timeout_ms")?.toLongOrNull()?.let { connectionTimeout = it }
-        }
-    return HikariDataSource(config)
-}
+    schema: String,
+): HikariConfig =
+    HikariConfig().apply {
+        this.jdbcUrl = jdbcUrl
+        this.schema = schema
+        properties.getOptionalProperty("postgres.username")?.takeIf { it.isNotBlank() }?.let { username = it }
+        properties.getOptionalProperty("postgres.password")?.takeIf { it.isNotBlank() }?.let { password = it }
+        properties.getOptionalProperty("postgres.pool.max_size")?.toIntOrNull()?.let { maximumPoolSize = it }
+        properties.getOptionalProperty("postgres.pool.min_idle")?.toIntOrNull()?.let { minimumIdle = it }
+        properties.getOptionalProperty("postgres.connection_timeout_ms")?.toLongOrNull()?.let { connectionTimeout = it }
+    }
 
 @Suppress("LongParameterList")
 private fun registerOAuth2DataSource(

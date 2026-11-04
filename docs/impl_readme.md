@@ -65,6 +65,14 @@ profile and database credentials from the repository `.env`. Adjust the
 starting the stack; Compose will provision PostgreSQL and RabbitMQ alongside
 the application.
 
+On startup the service prepares PostgreSQL itself, so no manual setup is
+needed. It connects to the database named in `postgres.jdbc_url` and creates
+it if it does not exist (the user then needs the `CREATEDB` privilege). Its
+tables live in their own schema, `postgres.schema` (default `gardener`), so the
+database can be shared with other services. Existing schemas, tables and
+indexes are used as they are; missing ones are created from
+`src/main/resources/db/postgres-schema.sql`.
+
 ## Deployment
 
 From the repository root run:

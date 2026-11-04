@@ -12,6 +12,7 @@
   "rabbitmq.queue.name": "third-party-queue",
 
   "postgres.jdbc_url": "jdbc:postgresql://postgres:5432/gardener",
+  "postgres.schema": "gardener",
   "postgres.username": "",
   "postgres.password": "",
   "postgres.pool.max_size": 10,
