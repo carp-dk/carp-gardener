@@ -1,25 +1,26 @@
 [versions]
 kotlin = "2.4.21"
-junit = "5.11.4"
+junit = "6.1.3"
 shadow = "9.6.1"
 slf4j = "2.0.20"
 logback = "1.6.6"
 jackson = "2.22.4"
-mockitoKotlin = "5.4.0"
+mockitoKotlin = "6.4.0"
 detekt = "1.23.8"
 ktlintGradle = "14.2.0"
 
 ktor = "3.6.1"
 
 postgresql = "42.7.14"
-hikari = "5.1.0"
+hikari = "7.1.0"
 
 
 # Coroutines
-kotlinx_coroutines = "1.9.0"
+kotlinx_coroutines = "1.11.0"
 # Aligns the Netty modules pulled in by Ktor and the RabbitMQ client on one version.
 netty = "4.2.20.Final"
-kotlinx_serialization_json = "1.7.3"
+kotlinx_serialization_json = "1.12.0"
+carp = "1.3.0"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version = "33.8.0-jre" }
@@ -57,6 +58,8 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization_json" }
+carp-data-core = { module = "dk.cachet.carp.data:carp.data.core-jvm", version.ref = "carp" }
+carp-common = { module = "dk.cachet.carp.common:carp.common-jvm", version.ref = "carp" }
 
 
 [plugins]

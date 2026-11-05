@@ -46,6 +46,7 @@ dependencies {
 
     // Kotlin
     implementation(libs.kotlin.reflect)
+    implementation(libs.kotlinx.coroutines.core)
 
     // HTTP client/server
     implementation(libs.ktor.server.core)
@@ -61,8 +62,8 @@ dependencies {
     implementation(libs.postgresql)
 
     // CARP data stream core models
-    implementation("dk.cachet.carp.data:carp.data.core-jvm:1.2.0")
-    implementation("dk.cachet.carp.common:carp.common-jvm:1.2.0")
+    implementation(libs.carp.data.core)
+    implementation(libs.carp.common)
     implementation(libs.kotlinx.serialization.json)
 
     // Test

@@ -26,7 +26,9 @@ dependencies {
     implementation(libs.kotlin.reflect)
 
     // Tests
+    testImplementation(platform(libs.junit.bom))
     testImplementation(kotlin("test"))
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.mockito.kotlin)
 }
 
