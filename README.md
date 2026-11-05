@@ -29,7 +29,7 @@ Run the Gradle wrapper from the repository root:
 
 ## Run the CARP implementation
 - **With Docker Compose**  
-  1) Copy the sample env file: `cp gardener-caws-implementation/_.local.env gardener-caws-implementation/.env` and add your secrets.  
+  1) Create `gardener-caws-implementation/.env` (gitignored) with your secrets. Config keys map to variables by upper-casing and replacing `.` with `__`, e.g. `fitbit.client.id` → `FITBIT__CLIENT__ID`.  
   2) Start the stack:  
   `docker compose -f gardener-caws-implementation/docker/docker-compose.yml --env-file gardener-caws-implementation/.env up --build`  
   This starts the service on port `8444`. It connects to the shared PostgreSQL and RabbitMQ of the carp-webservices stack, which must already be running; `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `RABBITMQ_USER` and `RABBITMQ_PASSWORD` in `.env` select the database and credentials (defaults `gardener` and `admin` / `admin`). Gardener's tables, exchange and queue are created on first start if missing.
