@@ -2,27 +2,27 @@
 kotlin = "2.4.21"
 junit = "5.11.4"
 shadow = "9.6.1"
-slf4j = "2.0.17"
-logback = "1.5.13"
-jackson = "2.20.0"
+slf4j = "2.0.20"
+logback = "1.6.6"
+jackson = "2.22.4"
 mockitoKotlin = "5.4.0"
 detekt = "1.23.8"
 ktlintGradle = "14.2.0"
 
-ktor = "3.0.3"
+ktor = "3.6.1"
 
-postgresql = "42.7.4"
+postgresql = "42.7.14"
 hikari = "5.1.0"
 
 
 # Coroutines
 kotlinx_coroutines = "1.9.0"
-# If you keep a native Netty for mac, pin it explicitly (or align to Vert.x BOM)
-netty = "4.1.67.Final"
+# Aligns the Netty modules pulled in by Ktor and the RabbitMQ client on one version.
+netty = "4.2.20.Final"
 kotlinx_serialization_json = "1.7.3"
 
 [libraries]
-guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
+guava = { module = "com.google.guava:guava", version = "33.8.0-jre" }
 scribejava = { module = "com.github.scribejava:scribejava-core", version = "8.3.3" }
 
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
@@ -31,8 +31,8 @@ jackson-jsr310        = { module = "com.fasterxml.jackson.datatype:jackson-datat
 slf4j-api    = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback      = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
-rabbitmq     = { module = "com.rabbitmq:amqp-client", version = "5.18.0" }
-netty-osx    = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "netty" }
+rabbitmq     = { module = "com.rabbitmq:amqp-client", version = "5.37.0" }
+netty-bom    = { module = "io.netty:netty-bom", version.ref = "netty" }
 
 kotlin-stdlib  = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }

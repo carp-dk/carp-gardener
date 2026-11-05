@@ -44,14 +44,12 @@ dependencies {
     // RabbitMQ
     implementation(libs.rabbitmq)
 
-    // macOS native resolver (optional)
-    runtimeOnly(libs.netty.osx)
-
     // Kotlin
     implementation(libs.kotlin.reflect)
 
     // HTTP client/server
     implementation(libs.ktor.server.core)
+    implementation(platform(libs.netty.bom))
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.content.negotiation)
     implementation(libs.ktor.serialization.jackson)
