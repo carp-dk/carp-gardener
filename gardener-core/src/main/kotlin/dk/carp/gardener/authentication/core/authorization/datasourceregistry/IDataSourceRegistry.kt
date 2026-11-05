@@ -15,6 +15,11 @@ interface IDataSourceRegistry {
     fun getDataSourceById(id: String): IDataSource
 
     /**
+     * Returns the [IDataSource] instance with the given [id], or null when no such data source is activated.
+     */
+    fun findDataSourceById(id: String): IDataSource?
+
+    /**
      * Inserts a new [dataSource].
      *
      * @throws IllegalArgumentException When the [dataSource] has already been activated.

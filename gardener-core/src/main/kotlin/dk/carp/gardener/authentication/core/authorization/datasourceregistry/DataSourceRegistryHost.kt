@@ -22,7 +22,9 @@ class DataSourceRegistryHost(
      * with the given id.
      */
     override fun getDataSourceById(id: String): IDataSource =
-        dataSources[id] ?: throw IllegalArgumentException("Data source with id $id is not found.")
+        findDataSourceById(id) ?: throw IllegalArgumentException("Data source with id $id is not found.")
+
+    override fun findDataSourceById(id: String): IDataSource? = dataSources[id]
 
     /**
      * Inserts the [dataSource] to the [dataSources] collection

@@ -71,6 +71,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.withType<ShadowJar> {

@@ -7,6 +7,7 @@ import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitD
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 /**
  * Tests the functionality of [DataSourceRegistryHost].
@@ -22,6 +23,12 @@ class DataSourceRegistryTest : OAuth2Test() {
         saveDataSource(fitbitDataSource)
         val retrieved = dataSourceRegistry.getDataSourceById(FitbitDataSource.DATA_SOURCE_ID)
         assertEquals(FitbitDataSource.DATA_SOURCE_ID, retrieved.getId())
+    }
+
+    @Test
+    fun unknownDataSourceIsNotFound() {
+        assertNull(dataSourceRegistry.findDataSourceById(FitbitDataSource.DATA_SOURCE_ID))
+        assertFailsWith<IllegalArgumentException> { dataSourceRegistry.getDataSourceById(FitbitDataSource.DATA_SOURCE_ID) }
     }
 
     @Test

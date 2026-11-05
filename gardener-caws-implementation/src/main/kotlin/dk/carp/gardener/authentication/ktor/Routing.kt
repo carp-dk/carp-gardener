@@ -11,6 +11,7 @@ import dk.carp.gardener.authentication.core.common.events.oauth2.OAuth2Event
 import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -36,7 +37,9 @@ fun Application.configureRouting(
             val applicationData = buildApplicationData(deploymentId, deviceRoleName)
             logger.info("Authorization request initiated for {}/{}", dataSourceId, userId)
 
-            val dataSource = dataSourceRegistry.getDataSourceById(dataSourceId)
+            val dataSource =
+                dataSourceRegistry.findDataSourceById(dataSourceId)
+                    ?: return@get call.respondUnknownDataSource(dataSourceId, logger)
             val request =
                 if (dataSource.getAuthorizationType() == AuthorizationType.OAUTH2) {
                     val scopes = call.request.queryParameters["scopes"] ?: ""
@@ -57,7 +60,9 @@ fun Application.configureRouting(
 
         get("/wearables/api/oauth/{dataSourceId}/callback") {
             val dataSourceId = call.parameters["dataSourceId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val dataSource = dataSourceRegistry.getDataSourceById(dataSourceId)
+            val dataSource =
+                dataSourceRegistry.findDataSourceById(dataSourceId)
+                    ?: return@get call.respondUnknownDataSource(dataSourceId, logger)
             logger.info("Authorization Callback called for {}", dataSourceId)
 
             if (dataSource.getAuthorizationType() == AuthorizationType.OAUTH2) {
@@ -93,7 +98,9 @@ fun Application.configureRouting(
 
         post("/wearables/api/collection/{dataSourceId}") {
             val dataSourceId = call.parameters["dataSourceId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-            val dataSource = dataSourceRegistry.getDataSourceById(dataSourceId)
+            val dataSource =
+                dataSourceRegistry.findDataSourceById(dataSourceId)
+                    ?: return@post call.respondUnknownDataSource(dataSourceId, logger)
             logger.info("Data collection callback called for {}", dataSourceId)
 
             val payload = runCatching { call.receiveText() }.getOrDefault("")
@@ -132,6 +139,15 @@ fun Application.configureRouting(
             }
         }
     }
+}
+
+// Unknown ids and data sources left inactive (no credentials configured) are both "not found" to callers.
+private suspend fun ApplicationCall.respondUnknownDataSource(
+    dataSourceId: String,
+    logger: Logger,
+) {
+    logger.warn("Request for unknown or inactive data source '{}'.", dataSourceId)
+    respond(HttpStatusCode.NotFound)
 }
 
 private fun buildApplicationData(
