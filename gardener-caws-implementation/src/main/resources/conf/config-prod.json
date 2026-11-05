@@ -1,8 +1,6 @@
 {
   "webserver.environment": "production",
   "webserver.port": 8444,
-  "webserver.cert.path": "certificate/fullchain.pem",
-  "webserver.key.path": "certificate/privatekey.pem",
 
   "rabbitmq.host": "rabbitmq-common",
   "rabbitmq.port": 5672,

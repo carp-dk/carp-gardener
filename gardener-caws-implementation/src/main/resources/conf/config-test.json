@@ -1,8 +1,6 @@
 {
   "webserver.environment": "test",
   "webserver.port": 8444,
-  "webserver.cert.path": "certificate/fullchain.pem",
-  "webserver.key.path": "certificate/privatekey.pem",
 
   "rabbitmq.host": "localhost",
   "rabbitmq.port": 5672,

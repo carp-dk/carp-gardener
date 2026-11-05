@@ -192,3 +192,10 @@ nbdist/
 
 ### Agents ###
 /.github/copilot-instructions.md
+
+### Key material ###
+*.pem
+*.key
+*.jks
+*.p12
+*.pfx
