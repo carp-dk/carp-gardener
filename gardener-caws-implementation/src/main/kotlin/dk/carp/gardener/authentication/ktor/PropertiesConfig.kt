@@ -25,9 +25,10 @@ class PropertiesConfig(
         LOGGER.info("Application properties successfully set.")
     }
 
+    /** Returns the value for [key]; a blank value counts as unset, so required settings left empty fail here. */
     fun getProperty(key: String): String =
         environmentOverrides[key]
-            ?: properties[key]?.toString()
+            ?: properties[key]?.toString()?.takeIf { it.isNotBlank() }
             ?: throw IllegalArgumentException("No configuration value found for key '$key'")
 
     fun getOptionalProperty(key: String): String? = environmentOverrides[key] ?: properties[key]?.toString()
