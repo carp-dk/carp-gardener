@@ -43,6 +43,8 @@ class WithingsDataSource(
         const val QP_LAST_UPDATE = "lastupdate"
         const val QP_START_DATE = "startdate"
         const val QP_END_DATE = "enddate"
+        const val QP_START_DATE_YMD = "startdateymd"
+        const val QP_END_DATE_YMD = "enddateymd"
     }
 
     /**
@@ -125,10 +127,13 @@ class WithingsDataSource(
         val uriString: String
         val queryParams: MutableMap<String, String> = mutableMapOf()
         when (dataType) {
+            // Activity pings carry the day as `date=YYYY-MM-DD`; getactivity takes it as a one-day range.
             WithingsDataCollectionType.DAILY_ACTIVITY -> {
                 uriString = "${clientSettings.dataUrl}${dataType.getEndpoint()}"
                 queryParams[QP_ACTION] = dataType.action
-                queryParams[QP_LAST_UPDATE] = rawPing.get(P_DATE).asInt().toString()
+                val day = rawPing.get(P_DATE).textValue()
+                queryParams[QP_START_DATE_YMD] = day
+                queryParams[QP_END_DATE_YMD] = day
             }
             WithingsDataCollectionType.HEART_LIST -> {
                 uriString = "${clientSettings.dataUrl}${dataType.getEndpoint()}"
@@ -136,11 +141,12 @@ class WithingsDataSource(
                 queryParams[QP_START_DATE] = rawPing.get(P_START_DATE).textValue()
                 queryParams[QP_END_DATE] = rawPing.get(P_END_DATE).textValue()
             }
+            // getsummary takes no epoch range, only dates or `lastupdate`. A summary is modified after its
+            // night starts, so `lastupdate` = the ping's start includes it without guessing the user's timezone.
             WithingsDataCollectionType.SLEEP -> {
                 uriString = "${clientSettings.dataUrl}${dataType.getEndpoint()}"
                 queryParams[QP_ACTION] = dataType.action
-                queryParams[QP_START_DATE] = rawPing.get(P_START_DATE).textValue()
-                queryParams[QP_END_DATE] = rawPing.get(P_END_DATE).textValue()
+                queryParams[QP_LAST_UPDATE] = rawPing.get(P_START_DATE).textValue()
             }
         }
         return Uri(method = HttpMethod.GET, uri = uriString, queryParams = queryParams)

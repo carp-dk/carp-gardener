@@ -16,6 +16,7 @@ import dk.carp.gardener.authentication.core.authorization.devices.dexcom.DexcomD
 import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitAccessTokenResponseExtractor
 import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
 import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsAccessTokenResponseExtractor
+import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsDataCollectionType
 import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsDataSource
 import dk.carp.gardener.authentication.core.collection.IDataCollectionOperator
 import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
@@ -148,68 +149,7 @@ class OAuth2Operator(
             }
         }
         if (dataSourceId == WithingsDataSource.DATA_SOURCE_ID) {
-            // Get a nounce
-            val nonceAction = "getnonce"
-            val clientId = clientSettings.clientId
-            val nonceTimestamp = Instant.now().epochSecond
-            val nonceConcatenatedParams = "$nonceAction,$clientId,$nonceTimestamp"
-            val clientSecret = clientSettings.clientSecret
-            val nonceSignature =
-                Hashing
-                    .hmacSha256(
-                        clientSecret.encodeToByteArray(),
-                    ).hashString(nonceConcatenatedParams, StandardCharsets.UTF_8)
-                    .toString()
-
-            runBlocking {
-                runCatching {
-                    httpClient.post("https://wbsapi.withings.net/v2/signature") {
-                        parameter("action", nonceAction)
-                        parameter("client_id", clientId)
-                        parameter("timestamp", nonceTimestamp.toString())
-                        parameter("signature", nonceSignature)
-                    }
-                }.onSuccess { response ->
-                    if (!response.status.isSuccess()) {
-                        LOGGER.info("Error while getting nounce for Withings subscription for user $userId: HTTP ${response.status.value}")
-                        return@onSuccess
-                    }
-                    val bodyNode = ConfiguredObjectMapper.instance.readTree(response.bodyAsText())
-
-                    val nonce = bodyNode.get("body").get("nonce").textValue()
-                    val subAction = "subscribe"
-                    val subCallback = properties.getProperty("withings.client.collection.callback.uri")
-                    val subAppli = "16"
-                    val subConcatenatedParams = "$subAction,$clientId,$nonce"
-                    val subSignature =
-                        Hashing
-                            .hmacSha256(
-                                clientSecret.encodeToByteArray(),
-                            ).hashString(subConcatenatedParams, StandardCharsets.UTF_8)
-                            .toString()
-
-                    runCatching {
-                        httpClient.post("https://wbsapi.withings.net/notify") {
-                            header("Authorization", "Bearer ${result.extractAccessToken()}")
-                            parameter("action", subAction)
-                            parameter("callbackurl", subCallback)
-                            parameter("appli", subAppli)
-                            parameter("nonce", nonce)
-                            parameter("client_id", clientId)
-                            parameter("signature", subSignature)
-                        }
-                    }.onSuccess { subscriptionResponse ->
-                        val body = runCatching { subscriptionResponse.bodyAsText() }.getOrDefault("")
-                        LOGGER.info(
-                            "Withings subscription created for user $userId with appli 16 - (HTTP ${subscriptionResponse.status.value}) $body",
-                        )
-                    }.onFailure { ex ->
-                        LOGGER.info("Withings subscription creation failed for user $userId: ${ex.message}")
-                    }
-                }.onFailure { ex ->
-                    LOGGER.info("Error while getting nounce for Withings subscription for user $userId: ${ex.message}")
-                }
-            }
+            subscribeToWithingsNotifications(userId, result.extractAccessToken())
         }
 
         return result
@@ -295,6 +235,70 @@ class OAuth2Operator(
             callback(response.bodyAsText())
         }
     }
+
+    /**
+     * Subscribes the user to a Withings notification for every supported data type, so Withings pings
+     * [WithingsDataSource]'s collection callback whenever new data of that type is synced.
+     * Each subscription needs its own nonce. Failures are logged and do not abort the authorization.
+     */
+    private fun subscribeToWithingsNotifications(
+        userId: String,
+        accessToken: String?,
+    ) {
+        val callbackUrl = properties.getProperty("withings.client.collection.callback.uri")
+        WithingsDataCollectionType.entries.forEach { type ->
+            runBlocking {
+                runCatching {
+                    val nonce = requestWithingsNonce()
+                    val response =
+                        httpClient.post("https://wbsapi.withings.net/notify") {
+                            header("Authorization", "Bearer $accessToken")
+                            parameter("action", "subscribe")
+                            parameter("callbackurl", callbackUrl)
+                            parameter("appli", type.getIdentifier())
+                            parameter("nonce", nonce)
+                            parameter("client_id", clientSettings.clientId)
+                            parameter("signature", withingsSignature("subscribe,${clientSettings.clientId},$nonce"))
+                        }
+                    val body = response.bodyAsText()
+                    val status = withingsStatus(body)
+                    if (response.status.isSuccess() && status == 0) {
+                        LOGGER.info("Withings subscription created for user $userId with appli ${type.getIdentifier()}.")
+                    } else {
+                        LOGGER.warn(
+                            "Withings subscription failed for user $userId with appli ${type.getIdentifier()}: " +
+                                "HTTP ${response.status.value}, status $status, $body",
+                        )
+                    }
+                }.onFailure { ex ->
+                    LOGGER.warn("Withings subscription failed for user $userId with appli ${type.getIdentifier()}: ${ex.message}")
+                }
+            }
+        }
+    }
+
+    private suspend fun requestWithingsNonce(): String {
+        val timestamp = Instant.now().epochSecond
+        val response =
+            httpClient.post("https://wbsapi.withings.net/v2/signature") {
+                parameter("action", "getnonce")
+                parameter("client_id", clientSettings.clientId)
+                parameter("timestamp", timestamp.toString())
+                parameter("signature", withingsSignature("getnonce,${clientSettings.clientId},$timestamp"))
+            }
+        val body = response.bodyAsText()
+        val nonce = ConfiguredObjectMapper.instance.readTree(body).path("body").path("nonce").textValue()
+        return checkNotNull(nonce) { "No nonce in Withings response (HTTP ${response.status.value}): $body" }
+    }
+
+    private fun withingsSignature(concatenatedParams: String): String =
+        Hashing
+            .hmacSha256(clientSettings.clientSecret.encodeToByteArray())
+            .hashString(concatenatedParams, StandardCharsets.UTF_8)
+            .toString()
+
+    private fun withingsStatus(body: String): Int? =
+        runCatching { ConfiguredObjectMapper.instance.readTree(body).get("status")?.asInt() }.getOrNull()
 
     private fun extractParams(
         userId: String,

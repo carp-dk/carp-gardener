@@ -6,9 +6,11 @@ import com.google.common.hash.Hashing
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams
+import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsDataSource
 import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
 import dk.carp.gardener.authentication.core.common.accessparams.OAuth2AccessParams
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
+import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObjectMapper
 import dk.carp.gardener.authentication.core.common.util.uri.Uri
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -194,6 +196,16 @@ class CoroutineOAuth2Operator(
                 "OAuth2 data collection failed from third-party API for ${accessParams.dataSourceId}/${accessParams.internalUserId}: $body",
             )
         }
-        return response.bodyAsText()
+        val body = response.bodyAsText()
+        // Withings reports errors (bad parameters, invalid token, ...) as HTTP 200 with a non-zero `status`.
+        if (accessParams.dataSourceId == WithingsDataSource.DATA_SOURCE_ID) {
+            val status = runCatching { ConfiguredObjectMapper.instance.readTree(body).get("status")?.asInt() }.getOrNull()
+            if (status != 0) {
+                throw IllegalStateException(
+                    "Withings data collection failed for ${accessParams.internalUserId} with status $status: $body",
+                )
+            }
+        }
+        return body
     }
 }
