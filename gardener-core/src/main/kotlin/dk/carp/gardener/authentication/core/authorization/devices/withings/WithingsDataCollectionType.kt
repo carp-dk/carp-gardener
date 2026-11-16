@@ -46,7 +46,7 @@ enum class WithingsDataCollectionType(
     },
     SLEEP(
         id = "44",
-        ep = "/v2/sleep ",
+        ep = "/v2/sleep",
         cn = "Withings sleep summary",
         ns = "com.withings.sleep",
         action = "getsummary",

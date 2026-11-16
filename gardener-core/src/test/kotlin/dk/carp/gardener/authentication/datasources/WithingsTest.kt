@@ -219,6 +219,39 @@ class WithingsTest : OAuth2Test() {
     }
 
     @Test
+    fun activityPingCollectsThatDay() {
+        val event = executionEventFor(withingsActivitiesPing)
+
+        assertEquals(WithingsDataCollectionType.DAILY_ACTIVITY, event.dataIdentifier)
+        assertTrue(event.uri.uri.endsWith("/v2/measure"))
+        assertEquals(
+            mapOf("action" to "getactivity", "startdateymd" to "2021-10-28", "enddateymd" to "2021-10-28"),
+            event.uri.queryParams,
+        )
+    }
+
+    @Test
+    fun sleepPingCollectsSummariesUpdatedSinceItsStart() {
+        val event = executionEventFor("userid=27444008&appli=44&startdate=1635375600&enddate=1635404400")
+
+        assertEquals(WithingsDataCollectionType.SLEEP, event.dataIdentifier)
+        assertTrue(event.uri.uri.endsWith("/v2/sleep"))
+        assertEquals(mapOf("action" to "getsummary", "lastupdate" to "1635375600"), event.uri.queryParams)
+    }
+
+    @Test
+    fun ecgPingCollectsItsTimeRange() {
+        val event = executionEventFor("userid=27444008&appli=54&startdate=1635375600&enddate=1635404400")
+
+        assertEquals(WithingsDataCollectionType.HEART_LIST, event.dataIdentifier)
+        assertTrue(event.uri.uri.endsWith("/v2/heart"))
+        assertEquals(
+            mapOf("action" to "list", "startdate" to "1635375600", "enddate" to "1635404400"),
+            event.uri.queryParams,
+        )
+    }
+
+    @Test
     fun accessParamsGetRefreshedWhenExpired() {
         // Save expired user access params
         val params =
@@ -355,6 +388,17 @@ class WithingsTest : OAuth2Test() {
         assertNotNull(firstActivity)
         assertEquals("2021-10-28", firstActivity.get("date").textValue())
         assertEquals(1962, firstActivity.get("steps").intValue())
+    }
+
+    private fun executionEventFor(ping: String): DataCollectionExecutionEvent.OAuth2ExecutionEvent {
+        registerWithingsUserFor(TestProperties.WITHINGS_TEST_USER_EXTERNAL_ID)
+        withingsDataSource.getDataCollectionPreparationEventFromPing(ping).forEach { spyingEventBus.publish(this::class, it) }
+
+        val argumentCaptor = argumentCaptor<IntegrationEvent>()
+        verify(spyingEventBus, atLeast(2)).publish(any(), argumentCaptor.capture())
+        val event = argumentCaptor.allValues.filterIsInstance<DataCollectionExecutionEvent.OAuth2ExecutionEvent>().firstOrNull()
+        assertNotNull(event)
+        return event
     }
 
     private fun registerWithingsUserFor(userId: String): OAuth2AccessParams {
