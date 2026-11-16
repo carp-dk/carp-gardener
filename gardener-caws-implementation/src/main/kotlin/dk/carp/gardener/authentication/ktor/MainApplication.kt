@@ -105,6 +105,8 @@ fun main() {
         clientSecret = properties.getOptionalProperty("withings.client.secret"),
         logger = logger,
         settingsFactory = { clientId, clientSecret ->
+            // Read when a user subscribes; resolve it now so a missing value fails at startup instead.
+            properties.getProperty("withings.client.collection.callback.uri")
             OAuth2ClientSettings(
                 clientId = clientId,
                 clientSecret = clientSecret,

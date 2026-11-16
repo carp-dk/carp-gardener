@@ -62,7 +62,9 @@ deployment. To set the desired profile, set the environment variable
 The _docker_ folder contains a single Docker Compose file that reads its
 profile and database credentials from the repository `.env`. Adjust the
 `PROFILE`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` entries as needed before
-starting the stack. Compose only starts the application; it reuses the
+starting the stack. `PROFILE` names the carp-webservices stack (and the image
+tag); `CONFIG_PROFILE` sets the `profile` variable above (default `local`, `prod`
+on servers). Compose only starts the application; it reuses the
 PostgreSQL and RabbitMQ containers of the carp-webservices stack
 (`carp-postgres-<profile>` and `carp-rabbitmq-<profile>`, reached over its
 external `carp-<profile>` network), so that stack must be running first.

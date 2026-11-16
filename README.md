@@ -39,6 +39,16 @@ Run the Gradle wrapper from the repository root:
   `cd gardener-caws-implementation && profile=local ../gradlew :caws-implementation:run`  
   Configuration is loaded from `conf/config-<profile>.json` with environment variables (or `.env`) overriding the defaults.
 
+## CI/CD
+Mirrors carp-webservices: GitHub Actions builds the image, servers pull it and run it with a `.env` filled in on the server.
+- **Pull requests** to `develop` and `main` run `./gradlew build` (`.github/workflows/pull-requests.yml`).
+- **Pushes** to `develop` and `main` run the build, then push `registry.carp.dk/carp/carp-gardener:<tag>` (`.github/workflows/create-docker.yml`): `develop` → `development`, `main` → `production`, each also tagged `<tag>-<commit sha>` for rollbacks. It needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` for `registry.carp.dk`.
+
+### Deploy on a server
+1) Have the carp-webservices stack of the same profile running (it creates the `carp-<profile>` network, PostgreSQL and RabbitMQ), and log in to the registry once: `docker login registry.carp.dk`.
+2) Clone this repository and fill in `gardener-caws-implementation/.env`: `PROFILE` is the stack profile and image tag (`development` or `production`), `CONFIG_PROFILE` the Gardener config (`prod`), plus the database/RabbitMQ credentials (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`) and, per vendor you enable, its credentials and callback URIs. The `prod` config has no callback URIs, so the service refuses to start if a vendor has credentials but no callback, e.g. `FITBIT__CLIENT__CALLBACK__URI=https://<host>/wearables/api/oauth/fitbit/callback` (likewise `WITHINGS__`, `DEXCOM__`, `GARMIN__CLIENT__CALLBACK__URI`) and `WITHINGS__CLIENT__COLLECTION__CALLBACK__URI=https://<host>/wearables/api/collection/withings`. No profile ships a Withings notification URL, so set that one locally too when you use Withings; it must be publicly reachable.
+3) Run `./deployment.sh`. It pulls the image for `PROFILE` and (re)starts `carp-wearables-service-<profile>`; run it again after each new image.
+
 ## Documentation
 - docs/core_readme.md – core framework architecture and extension hooks.
 - docs/impl_readme.md – deployment architecture and RabbitMQ consumer helper.

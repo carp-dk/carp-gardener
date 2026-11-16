@@ -29,7 +29,7 @@
   "withings.oauth2.access.uri": "https://wbsapi.withings.net/v2/oauth2",
   "withings.data.uri": "https://wbsapi.withings.net",
   "withings.client.callback.uri": "https://localhost:8444/wearables/api/oauth/withings/callback",
-  "withings.client.collection.callback.uri": "https://cans.cachet.dk/wearables/api/collection/withings",
+  "withings.client.collection.callback.uri": "",
 
   "dexcom.client.id": "",
   "dexcom.client.secret": "",
