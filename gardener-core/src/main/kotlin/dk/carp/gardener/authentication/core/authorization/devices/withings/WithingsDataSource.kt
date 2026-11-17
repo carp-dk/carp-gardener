@@ -10,7 +10,6 @@ import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.IOAu
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2ClientSettings
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2DataSource
 import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.OAuth2TokenRefreshParams
-import dk.carp.gardener.authentication.core.authorization.devices.fitbit.FitbitDataSource
 import dk.carp.gardener.authentication.core.common.accessparams.AccessParams
 import dk.carp.gardener.authentication.core.common.accessparams.IAccessParamsService
 import dk.carp.gardener.authentication.core.common.datatype.DataCollectionType
@@ -91,23 +90,19 @@ class WithingsDataSource(
 
     /**
      * Constructs a string made out of the [scopes] according to the vendor's specification.
-     * Withings reuqires the scopes to be separated by ',' characters.
+     * Withings requires the scopes to be separated by ',' characters.
+     * When no scopes are requested, all supported [Scopes] are requested, so every collected data type is granted.
      *
      * @throws IllegalArgumentException When any of the requested [scopes] is not valid or supported.
      */
     override fun constructScopeStringsForAuthorizationUrl(scopes: List<String>?): String {
-        if (scopes != null) {
-            scopes.forEach {
-                require(Scopes.isValid(it)) {
-                    IllegalArgumentException("The requested Withings scope $it is not valid!")
-                }
-            }
-            return scopes.joinToString(",")
+        if (scopes.isNullOrEmpty()) {
+            return Scopes.entries.joinToString(",") { it.key }
         }
-        return FitbitDataSource.Scopes.entries
-            .map { it.key }
-            .toList()
-            .joinToString(",")
+        scopes.forEach {
+            require(Scopes.isValid(it)) { "The requested Withings scope $it is not valid!" }
+        }
+        return scopes.joinToString(",")
     }
 
     /**

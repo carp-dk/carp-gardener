@@ -6,6 +6,7 @@ import dk.carp.gardener.authentication.base.TestProperties
 import dk.carp.gardener.authentication.base.TestUtil.Companion.getResourceAsText
 import dk.carp.gardener.authentication.core.authorization.authorizationrequest.OAuth2AuthorizationRequestParams
 import dk.carp.gardener.authentication.core.authorization.datasource.AuthorizationType
+import dk.carp.gardener.authentication.core.authorization.datasource.oauth2.IOAuth2AuthorizationOperator
 import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsDataCollectionType
 import dk.carp.gardener.authentication.core.authorization.devices.withings.WithingsDataSource
 import dk.carp.gardener.authentication.core.collection.data.ThirdPartyData
@@ -19,6 +20,8 @@ import dk.carp.gardener.authentication.core.common.util.serializer.ConfiguredObj
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeast
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import kotlin.test.Test
@@ -409,5 +412,39 @@ class WithingsTest : OAuth2Test() {
             "authorization_code",
             withingsDataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams,
         )
+    }
+
+    @Test
+    fun authorizationWithoutScopesRequestsAllWithingsScopes() {
+        assertEquals("user.activity,user.metrics", requestedScopesFor("noScopes", emptyList()))
+    }
+
+    @Test
+    fun authorizationRequestsTheGivenScopes() {
+        assertEquals("user.metrics", requestedScopesFor("givenScopes", listOf("user.metrics")))
+    }
+
+    @Test
+    fun authorizationRejectsScopesWithingsDoesNotSupport() {
+        assertFailsWith<IllegalArgumentException> { requestedScopesFor("fitbitScope", listOf("activity")) }
+    }
+
+    /** Starts an authorization with [scopes] and returns the scope string sent to Withings. */
+    private fun requestedScopesFor(
+        userId: String,
+        scopes: List<String>,
+    ): String {
+        val operator =
+            mock<IOAuth2AuthorizationOperator> {
+                on { getCompleteAuthorizationUrlForState(any(), any(), any()) } doReturn "url"
+            }
+        val dataSource =
+            WithingsDataSource(spyingEventBus, authorizationStateService, accessParamService, withingsClientSettings, operator)
+        val params = dataSource.getEstablishedAuthorizationRequestParams() as OAuth2AuthorizationRequestParams
+        params.scopes.addAll(scopes)
+        dataSource.initiateUserAuthorization(userId, WithingsDataSource.DATA_SOURCE_ID, params)
+        val captor = argumentCaptor<String>()
+        verify(operator).getCompleteAuthorizationUrlForState(any(), captor.capture(), any())
+        return captor.firstValue
     }
 }
