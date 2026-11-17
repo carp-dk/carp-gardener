@@ -2,8 +2,8 @@ services:
 
   ## Application service
   # PostgreSQL and RabbitMQ are shared with the carp-webservices stack, which must be running first.
-  carp-wearables-service:
-    container_name: carp-wearables-service-${PROFILE:-local}
+  carp-gardener:
+    container_name: carp-gardener-${PROFILE:-local}
     # Servers pull the image CI pushed for their profile (see deployment.sh); `up --build` builds it locally instead.
     image: registry.carp.dk/carp/carp-gardener:${PROFILE:-local}
     build:

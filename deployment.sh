@@ -36,5 +36,6 @@ compose() {
 }
 
 compose pull
-compose up -d --no-build
+# --remove-orphans drops containers of services renamed or removed since the last deploy.
+compose up -d --no-build --remove-orphans
 docker image prune -f >/dev/null
