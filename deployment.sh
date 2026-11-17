@@ -23,6 +23,9 @@ PROFILE="$(env_value PROFILE)"
 CONFIG_PROFILE="$(env_value CONFIG_PROFILE)"
 [[ -n "${PROFILE:-}" ]] || error "Set PROFILE in ${ENV} (e.g. development or production)."
 [[ -n "${CONFIG_PROFILE:-}" ]] || error "Set CONFIG_PROFILE in ${ENV} (e.g. prod)."
+# Compose falls back to admin/admin for local runs; a server must use the carp-webservices credentials.
+[[ -n "$(env_value ADMIN_USER)" && -n "$(env_value ADMIN_PASSWORD)" ]] ||
+  error "Set ADMIN_USER and ADMIN_PASSWORD in ${ENV} to those of the carp-webservices .env."
 
 NETWORK="carp-${PROFILE}"
 docker network inspect "${NETWORK}" >/dev/null 2>&1 \

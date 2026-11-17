@@ -21,13 +21,14 @@ services:
       # Gardener's conf/config-<profile>.json (local, prod).
       - profile=${CONFIG_PROFILE:-local}
       # Gardener keeps its tables in its own schema and creates its exchange/queue if they are missing.
+      # Like carp-webservices, one ADMIN_USER / ADMIN_PASSWORD pair is used for PostgreSQL and RabbitMQ.
       - POSTGRES__JDBC_URL=jdbc:postgresql://carp-postgres-${PROFILE:-local}:5432/${POSTGRES_DB:-gardener}
-      - POSTGRES__USERNAME=${POSTGRES_USER:-admin}
-      - POSTGRES__PASSWORD=${POSTGRES_PASSWORD:-admin}
+      - POSTGRES__USERNAME=${ADMIN_USER:-admin}
+      - POSTGRES__PASSWORD=${ADMIN_PASSWORD:-admin}
       - RABBITMQ__HOST=carp-rabbitmq-${PROFILE:-local}
       - RABBITMQ__PORT=5672
-      - RABBITMQ__USERNAME=${RABBITMQ_USER:-admin}
-      - RABBITMQ__PASSWORD=${RABBITMQ_PASSWORD:-admin}
+      - RABBITMQ__USERNAME=${ADMIN_USER:-admin}
+      - RABBITMQ__PASSWORD=${ADMIN_PASSWORD:-admin}
       - RABBITMQ__EXCHANGE__NAME=third-party-direct-exchange-${PROFILE:-local}
       - RABBITMQ__QUEUE__NAME=third-party-queue-${PROFILE:-local}
     networks:

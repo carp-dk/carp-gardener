@@ -61,15 +61,17 @@ deployment. To set the desired profile, set the environment variable
 
 The _docker_ folder contains a single Docker Compose file that reads its
 profile and database credentials from the repository `.env`. Adjust the
-`PROFILE`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` entries as needed before
+`PROFILE`, `ADMIN_USER`, and `ADMIN_PASSWORD` entries as needed before
 starting the stack. `PROFILE` names the carp-webservices stack (and the image
 tag); `CONFIG_PROFILE` sets the `profile` variable above (default `local`, `prod`
 on servers). Compose only starts the application; it reuses the
 PostgreSQL and RabbitMQ containers of the carp-webservices stack
 (`carp-postgres-<profile>` and `carp-rabbitmq-<profile>`, reached over its
 external `carp-<profile>` network), so that stack must be running first.
-`POSTGRES_USER`/`POSTGRES_PASSWORD` and `RABBITMQ_USER`/`RABBITMQ_PASSWORD`
-are the credentials of those shared services (default `admin`/`admin`).
+Like carp-webservices, one `ADMIN_USER`/`ADMIN_PASSWORD` pair is the
+credentials of both shared services (default `admin`/`admin`). Outside Docker,
+set `POSTGRES__USERNAME`, `POSTGRES__PASSWORD`, `RABBITMQ__USERNAME` and
+`RABBITMQ__PASSWORD` instead.
 
 Following the carp-webservices naming, Gardener publishes to the direct exchange
 `third-party-direct-exchange-<profile>`, routed to the queue
