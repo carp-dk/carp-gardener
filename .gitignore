@@ -187,7 +187,6 @@ nbdist/
 !.vscode/extensions.json
 
 ### Environment ###
-/gardener-caws-implementation/.env
 /gardener-caws-implementation/_.local.env
 
 ### Agents ###
