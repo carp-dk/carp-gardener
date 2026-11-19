@@ -30,7 +30,7 @@ fun Application.configureRouting(
     logger: Logger,
 ) {
     routing {
-        get("/wearables/api/authorize/{dataSourceId}/{userId}") {
+        get("/gardener/api/authorize/{dataSourceId}/{userId}") {
             val dataSourceId = call.parameters["dataSourceId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val userId = call.parameters["userId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val deploymentId = call.request.queryParameters["deploymentId"]
@@ -59,7 +59,7 @@ fun Application.configureRouting(
             call.respondRedirect(request.authorizationUrl)
         }
 
-        get("/wearables/api/oauth/{dataSourceId}/callback") {
+        get("/gardener/api/oauth/{dataSourceId}/callback") {
             val dataSourceId = call.parameters["dataSourceId"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             val dataSource =
                 dataSourceRegistry.findDataSourceById(dataSourceId)
@@ -98,7 +98,7 @@ fun Application.configureRouting(
         }
 
         // Withings accepts a callback or notification URL only if it answers a HEAD request with 200.
-        listOf("/wearables/api/oauth/{dataSourceId}/callback", "/wearables/api/collection/{dataSourceId}").forEach { path ->
+        listOf("/gardener/api/oauth/{dataSourceId}/callback", "/gardener/api/collection/{dataSourceId}").forEach { path ->
             head(path) {
                 val dataSourceId = call.parameters["dataSourceId"] ?: return@head call.respond(HttpStatusCode.BadRequest)
                 dataSourceRegistry.findDataSourceById(dataSourceId)
@@ -107,7 +107,7 @@ fun Application.configureRouting(
             }
         }
 
-        post("/wearables/api/collection/{dataSourceId}") {
+        post("/gardener/api/collection/{dataSourceId}") {
             val dataSourceId = call.parameters["dataSourceId"] ?: return@post call.respond(HttpStatusCode.BadRequest)
             val dataSource =
                 dataSourceRegistry.findDataSourceById(dataSourceId)
@@ -132,7 +132,7 @@ fun Application.configureRouting(
             events.forEach { event -> eventBus.publish(this::class, event) }
         }
 
-        get("/wearables/api/collection/fitbit") {
+        get("/gardener/api/collection/fitbit") {
             logger.info("Fitbit subscriber verification endpoint called.")
             val verificationCode = properties.getProperty("fitbit.client.subscription.code")
             val verifyParam = call.request.queryParameters["verify"]

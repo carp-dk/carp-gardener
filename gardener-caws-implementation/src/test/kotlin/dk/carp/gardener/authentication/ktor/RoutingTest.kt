@@ -22,26 +22,26 @@ class RoutingTest {
     @Test
     fun authorizeForInactiveDataSourceIsNotFound() =
         withRouting {
-            assertEquals(HttpStatusCode.NotFound, client.get("/wearables/api/authorize/fitbit/user-1").status)
+            assertEquals(HttpStatusCode.NotFound, client.get("/gardener/api/authorize/fitbit/user-1").status)
         }
 
     @Test
     fun callbackForInactiveDataSourceIsNotFound() =
         withRouting {
-            assertEquals(HttpStatusCode.NotFound, client.get("/wearables/api/oauth/fitbit/callback?code=c&state=s").status)
+            assertEquals(HttpStatusCode.NotFound, client.get("/gardener/api/oauth/fitbit/callback?code=c&state=s").status)
         }
 
     @Test
     fun collectionForInactiveDataSourceIsNotFound() =
         withRouting {
-            assertEquals(HttpStatusCode.NotFound, client.post("/wearables/api/collection/withings").status)
+            assertEquals(HttpStatusCode.NotFound, client.post("/gardener/api/collection/withings").status)
         }
 
     @Test
     fun collectionForActiveDataSourceIsAccepted() {
         registry.activateDataSource(mock<IDataSource> { on { getId() } doReturn "withings" })
         withRouting {
-            assertEquals(HttpStatusCode.OK, client.post("/wearables/api/collection/withings").status)
+            assertEquals(HttpStatusCode.OK, client.post("/gardener/api/collection/withings").status)
         }
     }
 
@@ -49,16 +49,16 @@ class RoutingTest {
     fun activeDataSourceAnswersHeadOnCallbackAndNotificationUrls() {
         registry.activateDataSource(mock<IDataSource> { on { getId() } doReturn "withings" })
         withRouting {
-            assertEquals(HttpStatusCode.OK, client.head("/wearables/api/oauth/withings/callback").status)
-            assertEquals(HttpStatusCode.OK, client.head("/wearables/api/collection/withings").status)
+            assertEquals(HttpStatusCode.OK, client.head("/gardener/api/oauth/withings/callback").status)
+            assertEquals(HttpStatusCode.OK, client.head("/gardener/api/collection/withings").status)
         }
     }
 
     @Test
     fun headForInactiveDataSourceIsNotFound() =
         withRouting {
-            assertEquals(HttpStatusCode.NotFound, client.head("/wearables/api/oauth/withings/callback").status)
-            assertEquals(HttpStatusCode.NotFound, client.head("/wearables/api/collection/withings").status)
+            assertEquals(HttpStatusCode.NotFound, client.head("/gardener/api/oauth/withings/callback").status)
+            assertEquals(HttpStatusCode.NotFound, client.head("/gardener/api/collection/withings").status)
         }
 
     private fun withRouting(block: suspend ApplicationTestBuilder.() -> Unit) =

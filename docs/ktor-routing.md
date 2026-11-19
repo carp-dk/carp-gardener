@@ -12,7 +12,7 @@ This Ktor module exposes the public HTTP surface for authorization callbacks and
 
 ## Endpoint Reference
 
-- `GET /wearables/api/authorize/{dataSourceId}/{userId}`  
+- `GET /gardener/api/authorize/{dataSourceId}/{userId}`  
   Starts OAuth authorization and redirects to the vendor.
   - Path: `dataSourceId` (fitbit|garmin|withings|dexcom…), `userId` (internal user id). Required.
   - Query:  
@@ -21,13 +21,13 @@ This Ktor module exposes the public HTTP surface for authorization callbacks and
     - `scopes` (optional, OAuth2 only): comma-separated scopes to request. If omitted, defaults per data source.
   - Response: `302` redirect to provider authorization URL. `400` when path params missing.
 
-- `GET /wearables/api/oauth/{dataSourceId}/callback`  
+- `GET /gardener/api/oauth/{dataSourceId}/callback`  
   Handles OAuth callbacks from vendors.
   - OAuth2 expects query `code`, `state`; publishes `OAuth2Event.AuthorizationCodeAcquired`.
   - OAuth1 expects query `state`, `oauth_token`, `oauth_verifier`; publishes `OAuth1Event.AuthorizedTokenAcquired`.
   - Response: `200 OK` always.
 
-- `POST /wearables/api/collection/{dataSourceId}`  
+- `POST /gardener/api/collection/{dataSourceId}`  
   Vendor webhook receiver for collection pings.
   - Path: `dataSourceId` required.
   - Body: raw payload (varies by vendor). Blank bodies are logged and ignored.
@@ -57,7 +57,7 @@ This Ktor module exposes the public HTTP surface for authorization callbacks and
       where `appli` is 16 (daily activity), 54 (heart list), or 44 (sleep), plus `date` or `startdate`/`enddate` as required.
   - Processing: payload is passed to `dataSource.getDataCollectionPreparationEventFromPing` to emit `DataCollectionPreparationEvent`s onto the event bus.
 
-- `GET /wearables/api/collection/fitbit`  
+- `GET /gardener/api/collection/fitbit`  
   Fitbit subscriber verification endpoint.
   - Query: `verify` required; must match `fitbit.client.subscription.code` in properties.
   - Response: `204 No Content` when correct, `400` when missing, `404` otherwise.

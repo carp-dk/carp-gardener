@@ -9,4 +9,4 @@ WORKDIR /app
 COPY --from=builder /src/gardener-caws-implementation/build/libs/*-fat.jar app.jar
 EXPOSE 8444
 
-CMD echo "Starting CARP wearables service..." && exec java -jar app.jar
+CMD echo "Starting CARP Gardener..." && exec java -jar app.jar
