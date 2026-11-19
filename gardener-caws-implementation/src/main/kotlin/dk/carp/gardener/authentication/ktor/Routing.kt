@@ -17,6 +17,7 @@ import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
+import io.ktor.server.routing.head
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import org.slf4j.Logger
@@ -94,6 +95,16 @@ fun Application.configureRouting(
             }
 
             call.respond(HttpStatusCode.OK)
+        }
+
+        // Withings accepts a callback or notification URL only if it answers a HEAD request with 200.
+        listOf("/wearables/api/oauth/{dataSourceId}/callback", "/wearables/api/collection/{dataSourceId}").forEach { path ->
+            head(path) {
+                val dataSourceId = call.parameters["dataSourceId"] ?: return@head call.respond(HttpStatusCode.BadRequest)
+                dataSourceRegistry.findDataSourceById(dataSourceId)
+                    ?: return@head call.respondUnknownDataSource(dataSourceId, logger)
+                call.respond(HttpStatusCode.OK)
+            }
         }
 
         post("/wearables/api/collection/{dataSourceId}") {

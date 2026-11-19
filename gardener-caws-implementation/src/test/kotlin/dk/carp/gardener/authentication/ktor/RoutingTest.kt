@@ -4,6 +4,7 @@ import dk.carp.gardener.authentication.core.authorization.datasource.IDataSource
 import dk.carp.gardener.authentication.core.authorization.datasourceregistry.DataSourceRegistryHost
 import dk.carp.gardener.authentication.core.infrastructure.eventbus.SingleThreadedEventBus
 import io.ktor.client.request.get
+import io.ktor.client.request.head
 import io.ktor.client.request.post
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
@@ -43,6 +44,22 @@ class RoutingTest {
             assertEquals(HttpStatusCode.OK, client.post("/wearables/api/collection/withings").status)
         }
     }
+
+    @Test
+    fun activeDataSourceAnswersHeadOnCallbackAndNotificationUrls() {
+        registry.activateDataSource(mock<IDataSource> { on { getId() } doReturn "withings" })
+        withRouting {
+            assertEquals(HttpStatusCode.OK, client.head("/wearables/api/oauth/withings/callback").status)
+            assertEquals(HttpStatusCode.OK, client.head("/wearables/api/collection/withings").status)
+        }
+    }
+
+    @Test
+    fun headForInactiveDataSourceIsNotFound() =
+        withRouting {
+            assertEquals(HttpStatusCode.NotFound, client.head("/wearables/api/oauth/withings/callback").status)
+            assertEquals(HttpStatusCode.NotFound, client.head("/wearables/api/collection/withings").status)
+        }
 
     private fun withRouting(block: suspend ApplicationTestBuilder.() -> Unit) =
         testApplication {
