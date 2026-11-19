@@ -229,7 +229,7 @@ fun main() {
     val server =
         embeddedServer(Netty, port = webServerPort) {
             install(ContentNegotiation) { jackson() }
-            configureRouting(dataSourceRegistry, eventBus, properties, logger)
+            configureRouting(dataSourceRegistry, authorizationStateService, eventBus, properties, logger)
         }
 
     server.monitor.subscribe(ApplicationStarted) {
